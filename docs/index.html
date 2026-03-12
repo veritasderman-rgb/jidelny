@@ -288,6 +288,7 @@
     <button data-tab="frequency">Pestrost</button>
     <button data-tab="restrictions">Omezeni</button>
     <button data-tab="validator">Validator</button>
+    <button data-tab="generator">Generator jidelniku</button>
   </nav>
 
   <main>
@@ -446,6 +447,62 @@
         <div id="v-groups" class="form-grid"></div>
         <button class="btn" id="v-run" style="margin-top:1rem;">Validovat</button>
         <div id="v-results" style="margin-top:1rem;"></div>
+      </div>
+    </div>
+
+    <!-- GENERATOR -->
+    <div id="generator" class="tab-content">
+      <div class="card">
+        <h2>Generator jidelniku na 4 tydny</h2>
+        <div class="info-box">
+          Vygeneruje vzorovy jidelnicek na 20 pracovnich dnu vc. receptu, normativu na dany pocet stravniku
+          a nakupnich seznamu dle zvolene frekvence nakupu.
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Vekova kategorie</label>
+            <select id="g-age">
+              <option value="2-3">2&ndash;3 roky</option>
+              <option value="4-6">4&ndash;6 let</option>
+              <option value="7-10" selected>7&ndash;10 let</option>
+              <option value="11-14">11&ndash;14 let</option>
+              <option value="15+">15+ let</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Pocet stravniku</label>
+            <input type="number" id="g-diners" value="100" min="1" max="2000">
+          </div>
+          <div class="form-group">
+            <label>Datum zacatku (pondeli)</label>
+            <input type="date" id="g-start" value="2026-03-16">
+          </div>
+          <div class="form-group">
+            <label>Frekvence nakupu (dnu)</label>
+            <select id="g-freq">
+              <option value="1">Denne</option>
+              <option value="2">Ob den</option>
+              <option value="5" selected>1x tydne</option>
+              <option value="10">1x za 2 tydny</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn" id="g-run">Generovat jidelnicek</button>
+      </div>
+
+      <div id="g-output" style="display:none;">
+        <div class="card">
+          <h2>Souhrn</h2>
+          <div id="g-summary"></div>
+        </div>
+        <div class="card">
+          <h2>Jidelnicek po dnech</h2>
+          <div id="g-menu"></div>
+        </div>
+        <div class="card">
+          <h2>Nakupni seznamy</h2>
+          <div id="g-shopping"></div>
+        </div>
       </div>
     </div>
   </main>
@@ -855,6 +912,377 @@
     }
 
     setupValidator();
+
+    // ================================================================
+    // GENERATOR — RECIPE DATABASE + MENU + SHOPPING LIST
+    // ================================================================
+
+    const RECIPES = [
+      // DRUBEZ
+      {id:'kure-paprika',name:'Kureci prsa na paprice s celozrnnou ryzi',mainDish:'drubez',sideDish:'ryze',
+       soup:'Rajska polevka s testovinou',
+       soupIngredients:[{name:'Rajcata',grams:40,group:'zelenina_ovoce'},{name:'Mrkev',grams:10,group:'zelenina_ovoce'},{name:'Cibule',grams:5,group:'zelenina_ovoce'},{name:'Celozrnne testoviny',grams:8,group:'celozrnne_obiloviny'},{name:'Olivovy olej',grams:2,group:'tuky_volne'}],
+       mainIngredients:[{name:'Kureci prsa',grams:80,group:'maso'},{name:'Paprika cervena',grams:20,group:'zelenina_ovoce'},{name:'Smetana',grams:15,group:'mlecne_vyrobky_mleko'},{name:'Cibule',grams:10,group:'zelenina_ovoce'},{name:'Olivovy olej',grams:3,group:'tuky_volne'},{name:'Ryze natural',grams:60,group:'ostatni'}],
+       garnish:'Okurkovy salat',garnishIngredients:[{name:'Okurka',grams:40,group:'zelenina_ovoce'}],
+       beverage:'Neslazeny ovocny caj',allergens:[7],isSweet:false,isFried:false,
+       instructions:'Kureci prsa nakrajime na kostky, orestujeme na olivovem oleji s cibuli. Pridame papriku, podlijeme vodou, dusime do mekka. Zahutime smetanou. Podavame s ryzi natural a okurkovym salatem.',
+       estimatedCostPerPortion:32},
+      {id:'kure-bylinkove',name:'Pecene kure s bylinkami a bramborovym pyre',mainDish:'drubez',sideDish:'bramborova_kase',
+       soup:'Zeleninova polevka',
+       soupIngredients:[{name:'Mrkev',grams:15,group:'zelenina_ovoce'},{name:'Petrzel',grams:10,group:'zelenina_ovoce'},{name:'Celer',grams:8,group:'zelenina_ovoce'},{name:'Brambory',grams:15,group:'brambory_hlizy'},{name:'Olivovy olej',grams:2,group:'tuky_volne'}],
+       mainIngredients:[{name:'Kureci stehno',grams:85,group:'maso'},{name:'Brambory',grams:100,group:'brambory_hlizy'},{name:'Mleko',grams:20,group:'mlecne_vyrobky_mleko'},{name:'Maslo',grams:3,group:'tuky_volne'}],
+       garnish:'Mrkvovy salat',garnishIngredients:[{name:'Mrkev',grams:40,group:'zelenina_ovoce'}],
+       beverage:'Voda s citronem',allergens:[7],isSweet:false,isFried:false,
+       instructions:'Kureci stehno okoreníme bylinkami, peceme v troube na 180°C cca 35 min. Brambory uvarime, rozmakneme s mlekem a maslem na pyre.',
+       estimatedCostPerPortion:30},
+      {id:'kure-zelenina-testoviny',name:'Kureci nudlicky se zeleninou a celozrnnymi testovinami',mainDish:'drubez',sideDish:'testoviny',
+       soup:'Hrachova polevka',
+       soupIngredients:[{name:'Hrach suseny',grams:15,group:'lusteniny'},{name:'Mrkev',grams:8,group:'zelenina_ovoce'},{name:'Cibule',grams:5,group:'zelenina_ovoce'},{name:'Olivovy olej',grams:2,group:'tuky_volne'}],
+       mainIngredients:[{name:'Kureci prsa',grams:75,group:'maso'},{name:'Cuketa',grams:20,group:'zelenina_ovoce'},{name:'Paprika',grams:15,group:'zelenina_ovoce'},{name:'Celozrnne testoviny',grams:55,group:'celozrnne_obiloviny'},{name:'Olivovy olej',grams:4,group:'tuky_volne'}],
+       garnish:'Rajcatovy salat',garnishIngredients:[{name:'Rajcata',grams:35,group:'zelenina_ovoce'}],
+       beverage:'Neslazeny bylinny caj',allergens:[1],isSweet:false,isFried:false,
+       instructions:'Kureci prsa nakrajime na nudlicky, orestujeme. Pridame zeleninu, dusime. Podavame s uvarenimi celozrnnymi testovinami.',
+       estimatedCostPerPortion:28},
+      // RYBY
+      {id:'losos-peceny',name:'Peceny losos s brokolici a bramborovymi dilky',mainDish:'ryba',sideDish:'brambory_varene',
+       soup:'Cesnekova polevka s bramborem',
+       soupIngredients:[{name:'Cesnek',grams:5,group:'zelenina_ovoce'},{name:'Brambory',grams:20,group:'brambory_hlizy'},{name:'Olivovy olej',grams:2,group:'tuky_volne'}],
+       mainIngredients:[{name:'Losos filet',grams:70,group:'ryby_korysi_mekkysi'},{name:'Brambory',grams:90,group:'brambory_hlizy'},{name:'Brokolice',grams:30,group:'zelenina_ovoce'},{name:'Olivovy olej',grams:4,group:'tuky_volne'}],
+       garnish:'Zeleny salat',garnishIngredients:[{name:'Hlavkovy salat',grams:30,group:'zelenina_ovoce'}],
+       beverage:'Voda',allergens:[4],isSweet:false,isFried:false,
+       instructions:'Lososa peceme v troube na 190°C 15 min. Brambory nakrajime na dilky, peceme spolu s brokolici. Podavame se zelenym salatem.',
+       estimatedCostPerPortion:42},
+      {id:'treska-smetanova',name:'Treska na smetane s ryzi',mainDish:'ryba',sideDish:'ryze',
+       soup:'Brokolicova kremova polevka',
+       soupIngredients:[{name:'Brokolice',grams:25,group:'zelenina_ovoce'},{name:'Brambory',grams:10,group:'brambory_hlizy'},{name:'Smetana',grams:8,group:'mlecne_vyrobky_mleko'}],
+       mainIngredients:[{name:'Treska filet',grams:70,group:'ryby_korysi_mekkysi'},{name:'Smetana',grams:20,group:'mlecne_vyrobky_mleko'},{name:'Cibule',grams:8,group:'zelenina_ovoce'},{name:'Ryze',grams:55,group:'ostatni'},{name:'Olivovy olej',grams:3,group:'tuky_volne'}],
+       garnish:'Zeli coleslaw',garnishIngredients:[{name:'Bile zeli',grams:35,group:'zelenina_ovoce'},{name:'Mrkev',grams:10,group:'zelenina_ovoce'}],
+       beverage:'Neslazeny caj',allergens:[4,7],isSweet:false,isFried:false,
+       instructions:'Tresku dusime v smetanove omacce s cibuli. Podavame s ryzi a zelnym salatkem.',
+       estimatedCostPerPortion:38},
+      // VEPROVE
+      {id:'veprove-pecene',name:'Veprova pecene s bramborovym knedlikem a zelim',mainDish:'veprove',sideDish:'bramborove_knedliky',
+       soup:'Hovezi vyvar s nudlemi',
+       soupIngredients:[{name:'Hovezi kost',grams:10,group:'maso'},{name:'Mrkev',grams:8,group:'zelenina_ovoce'},{name:'Celozrnne nudle',grams:8,group:'celozrnne_obiloviny'}],
+       mainIngredients:[{name:'Veprove maso',grams:80,group:'maso'},{name:'Bramborovy knedlik',grams:80,group:'brambory_hlizy'},{name:'Dusene zeli',grams:40,group:'zelenina_ovoce'},{name:'Olivovy olej',grams:3,group:'tuky_volne'}],
+       garnish:'',garnishIngredients:[],
+       beverage:'Neslazeny caj',allergens:[1,3],isSweet:false,isFried:false,
+       instructions:'Veprovou peceni dusime v troube s korenym. Podavame s bramborovym knedlikem a dusenym zelim.',
+       estimatedCostPerPortion:30},
+      {id:'veprove-gulas',name:'Veprovy gulas s celozrnnym chlebem',mainDish:'veprove',sideDish:'jine',
+       soup:'Zeleninova polevka',
+       soupIngredients:[{name:'Mrkev',grams:15,group:'zelenina_ovoce'},{name:'Petrzel',grams:10,group:'zelenina_ovoce'},{name:'Celer',grams:8,group:'zelenina_ovoce'},{name:'Brambory',grams:15,group:'brambory_hlizy'},{name:'Olivovy olej',grams:2,group:'tuky_volne'}],
+       mainIngredients:[{name:'Veprove maso',grams:75,group:'maso'},{name:'Cibule',grams:15,group:'zelenina_ovoce'},{name:'Paprika',grams:10,group:'zelenina_ovoce'},{name:'Celozrnny chleb',grams:40,group:'celozrnne_obiloviny'},{name:'Olivovy olej',grams:3,group:'tuky_volne'}],
+       garnish:'Kvasena zelenina',garnishIngredients:[{name:'Kvasena zelenina',grams:30,group:'zelenina_ovoce'}],
+       beverage:'Voda',allergens:[1],isSweet:false,isFried:false,
+       instructions:'Maso nakrajime na kostky, orestujeme s cibuli. Pridame papriku, koreni, dusime do mekka. Podavame s celozrnnym chlebem.',
+       estimatedCostPerPortion:28},
+      // HOVEZI / KRALIK
+      {id:'hovezi-svickova',name:'Svickova na smetane s houskovym knedlikem',mainDish:'hovezi',sideDish:'houskove_knedliky',
+       soup:'Cesnekova polevka s bramborem',
+       soupIngredients:[{name:'Cesnek',grams:5,group:'zelenina_ovoce'},{name:'Brambory',grams:20,group:'brambory_hlizy'},{name:'Olivovy olej',grams:2,group:'tuky_volne'}],
+       mainIngredients:[{name:'Hovezi svickova',grams:75,group:'maso'},{name:'Mrkev',grams:15,group:'zelenina_ovoce'},{name:'Celer',grams:10,group:'zelenina_ovoce'},{name:'Smetana',grams:15,group:'mlecne_vyrobky_mleko'},{name:'Houskovy knedlik',grams:70,group:'ostatni'},{name:'Olivovy olej',grams:3,group:'tuky_volne'}],
+       garnish:'Brusinka',garnishIngredients:[{name:'Brusinkova omacka',grams:10,group:'zelenina_ovoce'}],
+       beverage:'Neslazeny caj',allergens:[1,3,7,9],isSweet:false,isFried:false,
+       instructions:'Hovezi maso dusime s koreninovou zeleninou. Omacku rozmixujeme, zahutime smetanou. Podavame s houskovym knedlikem a brusinkami.',
+       estimatedCostPerPortion:38},
+      {id:'hovezi-stroganoff',name:'Hovezi Stroganoff s ryzi natural',mainDish:'hovezi',sideDish:'ryze',
+       soup:'Rajska polevka s testovinou',
+       soupIngredients:[{name:'Rajcata',grams:40,group:'zelenina_ovoce'},{name:'Mrkev',grams:10,group:'zelenina_ovoce'},{name:'Cibule',grams:5,group:'zelenina_ovoce'},{name:'Celozrnne testoviny',grams:8,group:'celozrnne_obiloviny'},{name:'Olivovy olej',grams:2,group:'tuky_volne'}],
+       mainIngredients:[{name:'Hovezi maso',grams:75,group:'maso'},{name:'Houby',grams:15,group:'zelenina_ovoce'},{name:'Cibule',grams:10,group:'zelenina_ovoce'},{name:'Smetana',grams:12,group:'mlecne_vyrobky_mleko'},{name:'Ryze natural',grams:55,group:'ostatni'},{name:'Olivovy olej',grams:3,group:'tuky_volne'}],
+       garnish:'Sterilizovana okurka',garnishIngredients:[{name:'Okurka',grams:25,group:'zelenina_ovoce'}],
+       beverage:'Voda',allergens:[7],isSweet:false,isFried:false,
+       instructions:'Hovezi nakrajime na nudlicky, orestujeme s cibuli a houbami. Zalijeme smetanou, dusime. Podavame s ryzi.',
+       estimatedCostPerPortion:36},
+      {id:'kralik-peceny',name:'Peceny kralik s bramborami a zeleninou',mainDish:'kralik',sideDish:'brambory_varene',
+       soup:'Kulajda',
+       soupIngredients:[{name:'Brambory',grams:20,group:'brambory_hlizy'},{name:'Houby',grams:10,group:'zelenina_ovoce'},{name:'Kopr',grams:2,group:'zelenina_ovoce'},{name:'Smetana',grams:10,group:'mlecne_vyrobky_mleko'},{name:'Vejce',grams:5,group:'ostatni'}],
+       mainIngredients:[{name:'Kralici maso',grams:80,group:'maso'},{name:'Brambory',grams:90,group:'brambory_hlizy'},{name:'Mrkev',grams:20,group:'zelenina_ovoce'},{name:'Olivovy olej',grams:4,group:'tuky_volne'}],
+       garnish:'Cervena repa salat',garnishIngredients:[{name:'Cervena repa',grams:30,group:'zelenina_ovoce'}],
+       beverage:'Neslazeny caj',allergens:[3,7],isSweet:false,isFried:false,
+       instructions:'Kralika okoreníme, peceme v troube s brambory a mrkvi. Podavame s repovym salatkem.',
+       estimatedCostPerPortion:40},
+      // BEZMASE
+      {id:'lusteniny-chili',name:'Fazolove chili s celozrnnou ryzi',mainDish:'bezmase_zeleninove',sideDish:'ryze',
+       soup:'Dynova kremova polevka',
+       soupIngredients:[{name:'Dyne hokaido',grams:30,group:'zelenina_ovoce'},{name:'Brambory',grams:10,group:'brambory_hlizy'},{name:'Olivovy olej',grams:2,group:'tuky_volne'}],
+       mainIngredients:[{name:'Fazole cervene',grams:40,group:'lusteniny'},{name:'Rajcata',grams:30,group:'zelenina_ovoce'},{name:'Paprika',grams:15,group:'zelenina_ovoce'},{name:'Kukurice',grams:15,group:'zelenina_ovoce'},{name:'Cibule',grams:10,group:'zelenina_ovoce'},{name:'Celozrnna ryze',grams:55,group:'celozrnne_obiloviny'},{name:'Olivovy olej',grams:4,group:'tuky_volne'}],
+       garnish:'Jogurt',garnishIngredients:[{name:'Prirozeny jogurt',grams:30,group:'mlecne_vyrobky_mleko'}],
+       beverage:'Voda',allergens:[7],isSweet:false,isFried:false,
+       instructions:'Fazole predchystame (namocime pres noc). Dusime s rajcaty, paprikou, kukurici a korenym. Podavame s celozrnnou ryzi a lzici jogurtu.',
+       estimatedCostPerPortion:22},
+      {id:'zeleninove-rizoto',name:'Zeleninove rizoto s parmazanem',mainDish:'bezmase_zeleninove',sideDish:'ryze',
+       soup:'Cockova polevka',
+       soupIngredients:[{name:'Cocka cervena',grams:15,group:'lusteniny'},{name:'Mrkev',grams:8,group:'zelenina_ovoce'},{name:'Rajcata',grams:10,group:'zelenina_ovoce'},{name:'Olivovy olej',grams:2,group:'tuky_volne'}],
+       mainIngredients:[{name:'Ryze',grams:55,group:'ostatni'},{name:'Cuketa',grams:25,group:'zelenina_ovoce'},{name:'Hrasek',grams:15,group:'zelenina_ovoce'},{name:'Parmazan',grams:10,group:'mlecne_vyrobky_mleko'},{name:'Cibule',grams:8,group:'zelenina_ovoce'},{name:'Olivovy olej',grams:4,group:'tuky_volne'}],
+       garnish:'Rajcatovy salat',garnishIngredients:[{name:'Rajcata cherry',grams:35,group:'zelenina_ovoce'}],
+       beverage:'Voda s citronem',allergens:[7],isSweet:false,isFried:false,
+       instructions:'Cibuli orestujeme, pridame ryzi, postupne prilevame vyvar. Vmicname zeleninu a na konci parmazan.',
+       estimatedCostPerPortion:24},
+      {id:'cockovy-dhal',name:'Cockovy dhal s celozrnnym naanem',mainDish:'bezmase_zeleninove',sideDish:'jine',
+       soup:'Minestrone',
+       soupIngredients:[{name:'Fazole',grams:10,group:'lusteniny'},{name:'Rajcata',grams:15,group:'zelenina_ovoce'},{name:'Cuketa',grams:10,group:'zelenina_ovoce'},{name:'Celozrnne testoviny',grams:5,group:'celozrnne_obiloviny'},{name:'Olivovy olej',grams:2,group:'tuky_volne'}],
+       mainIngredients:[{name:'Cocka cervena',grams:40,group:'lusteniny'},{name:'Rajcata',grams:20,group:'zelenina_ovoce'},{name:'Spenat',grams:15,group:'zelenina_ovoce'},{name:'Cibule',grams:10,group:'zelenina_ovoce'},{name:'Celozrnny naan',grams:40,group:'celozrnne_obiloviny'},{name:'Olivovy olej',grams:4,group:'tuky_volne'}],
+       garnish:'Jogurt s matou',garnishIngredients:[{name:'Jogurt',grams:25,group:'mlecne_vyrobky_mleko'}],
+       beverage:'Neslazeny bylinny caj',allergens:[1,7],isSweet:false,isFried:false,
+       instructions:'Cocku uvarime s rajcaty, korenym a spenatem do huste konzistence. Podavame s celozrnnym naanem a jogurtem.',
+       estimatedCostPerPortion:20},
+      {id:'bramborak-peceny',name:'Pecene bramboraky se zeleninovym salatem',mainDish:'bezmase_zeleninove',sideDish:'brambory_varene',
+       soup:'Hrachova polevka',
+       soupIngredients:[{name:'Hrach suseny',grams:15,group:'lusteniny'},{name:'Mrkev',grams:8,group:'zelenina_ovoce'},{name:'Cibule',grams:5,group:'zelenina_ovoce'},{name:'Olivovy olej',grams:2,group:'tuky_volne'}],
+       mainIngredients:[{name:'Brambory',grams:100,group:'brambory_hlizy'},{name:'Vejce',grams:10,group:'ostatni'},{name:'Celozrnna mouka',grams:10,group:'celozrnne_obiloviny'},{name:'Cesnek',grams:3,group:'zelenina_ovoce'},{name:'Olivovy olej',grams:4,group:'tuky_volne'}],
+       garnish:'Michany salat',garnishIngredients:[{name:'Ledovy salat',grams:20,group:'zelenina_ovoce'},{name:'Rajce',grams:15,group:'zelenina_ovoce'},{name:'Okurka',grams:15,group:'zelenina_ovoce'}],
+       beverage:'Voda',allergens:[1,3],isSweet:false,isFried:false,
+       instructions:'Brambory nastrouhame, smichame s vejcem, moukou a cesnekem. Tvarujeme placicky, peceme v troube na 200°C 20 min. Podavame se salatem.',
+       estimatedCostPerPortion:18},
+      {id:'spagety-bolognese-veg',name:'Celozrnne spagety s cockovou bolonskou omackou',mainDish:'bezmase_zeleninove',sideDish:'testoviny',
+       soup:'Rajska polevka s testovinou',
+       soupIngredients:[{name:'Rajcata',grams:40,group:'zelenina_ovoce'},{name:'Mrkev',grams:10,group:'zelenina_ovoce'},{name:'Cibule',grams:5,group:'zelenina_ovoce'},{name:'Celozrnne testoviny',grams:8,group:'celozrnne_obiloviny'},{name:'Olivovy olej',grams:2,group:'tuky_volne'}],
+       mainIngredients:[{name:'Celozrnne spagety',grams:55,group:'celozrnne_obiloviny'},{name:'Cocka zelena',grams:25,group:'lusteniny'},{name:'Rajcata',grams:30,group:'zelenina_ovoce'},{name:'Mrkev',grams:10,group:'zelenina_ovoce'},{name:'Cibule',grams:8,group:'zelenina_ovoce'},{name:'Olivovy olej',grams:4,group:'tuky_volne'},{name:'Parmazan',grams:5,group:'mlecne_vyrobky_mleko'}],
+       garnish:'Zeleny salat',garnishIngredients:[{name:'Zeleny salat',grams:20,group:'zelenina_ovoce'}],
+       beverage:'Voda',allergens:[1,7],isSweet:false,isFried:false,
+       instructions:'Cocku uvarime. Pripravime omacku z rajcat, mrkve a cibule, vmicname cocku. Podavame s celozrnnymi spagetami a parmazanem.',
+       estimatedCostPerPortion:22},
+      // SLADKE
+      {id:'tvarohove-knedliky',name:'Tvarohove knedliky s ovocem',mainDish:'sladke_jidlo',sideDish:'jine',
+       soup:'Zeleninova polevka',
+       soupIngredients:[{name:'Mrkev',grams:15,group:'zelenina_ovoce'},{name:'Petrzel',grams:10,group:'zelenina_ovoce'},{name:'Celer',grams:8,group:'zelenina_ovoce'},{name:'Brambory',grams:15,group:'brambory_hlizy'},{name:'Olivovy olej',grams:2,group:'tuky_volne'}],
+       mainIngredients:[{name:'Tvaroh',grams:50,group:'mlecne_vyrobky_mleko'},{name:'Celozrnna mouka',grams:25,group:'celozrnne_obiloviny'},{name:'Vejce',grams:10,group:'ostatni'},{name:'Jahody/boruvky',grams:40,group:'zelenina_ovoce'},{name:'Maslo',grams:3,group:'tuky_volne'}],
+       garnish:'',garnishIngredients:[],
+       beverage:'Voda',allergens:[1,3,7],isSweet:true,isFried:false,
+       instructions:'Z tvarohu, mouky a vejce zpracujeme testo. Tvarujeme knedlicky, varime ve vode. Podavame s cerstvym ovocem a kouskem masla.',
+       estimatedCostPerPortion:26},
+    ];
+
+    const PORTION_MULT = {'2-3':0.57,'4-6':0.71,'7-10':1.0,'11-14':1.14,'15+':1.29};
+    const DAY_NAMES_GEN = ['Ne','Po','Ut','St','Ct','Pa','So'];
+    const GROUP_LABELS = {maso:'Maso',ryby_korysi_mekkysi:'Ryby',mlecne_vyrobky_mleko:'Mlecne vyrobky',tuky_volne:'Tuky',cukry_volne:'Cukry',zelenina_ovoce:'Zelenina a ovoce',brambory_hlizy:'Brambory',celozrnne_obiloviny:'Celozrnne obiloviny',lusteniny:'Lusteniny',ostatni:'Ostatni'};
+
+    function generateMenu(ageCategory, dinerCount, startDate, purchaseFreqDays) {
+      const workingDays = 20;
+      const portionMultiplier = PORTION_MULT[ageCategory];
+      const scale = workingDays / 20;
+      const targets = {
+        drubez: Math.round(3*scale), ryba: Math.round(2*scale),
+        veprove: Math.round(3*scale), hovezi_kralik: Math.round(4*scale),
+        bezmase: Math.round(6*scale), sladke: Math.round(1*scale)
+      };
+      const remaining = {...targets};
+      const plan = [];
+      const weeksCount = Math.ceil(workingDays / 5);
+      for (let w = 0; w < weeksCount; w++) {
+        const daysThisWeek = Math.min(5, workingDays - w*5);
+        const week = [];
+        const bezmaseDays = Math.min(2, remaining.bezmase, daysThisWeek);
+        for (let i = 0; i < bezmaseDays; i++) {
+          if (remaining.sladke > 0 && w % 2 === 1 && i === 0) {
+            week.push('sladke'); remaining.sladke--;
+          } else { week.push('bezmase'); remaining.bezmase--; }
+        }
+        if (remaining.ryba > 0 && daysThisWeek - week.length > 0) { week.push('ryba'); remaining.ryba--; }
+        if (remaining.drubez > 0 && daysThisWeek - week.length > 0) { week.push('drubez'); remaining.drubez--; }
+        while (week.length < daysThisWeek) {
+          if (remaining.hovezi_kralik > 0 && remaining.hovezi_kralik >= remaining.veprove) { week.push('hovezi_kralik'); remaining.hovezi_kralik--; }
+          else if (remaining.veprove > 0) { week.push('veprove'); remaining.veprove--; }
+          else if (remaining.hovezi_kralik > 0) { week.push('hovezi_kralik'); remaining.hovezi_kralik--; }
+          else if (remaining.bezmase > 0) { week.push('bezmase'); remaining.bezmase--; }
+          else { week.push('drubez'); }
+        }
+        // shuffle
+        for (let i = week.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i+1));
+          [week[i], week[j]] = [week[j], week[i]];
+        }
+        plan.push(...week);
+      }
+
+      const usedIds = new Set();
+      const days = [];
+      for (let i = 0; i < plan.length; i++) {
+        const cat = plan[i];
+        let candidates;
+        switch (cat) {
+          case 'drubez': candidates = RECIPES.filter(r => r.mainDish === 'drubez'); break;
+          case 'ryba': candidates = RECIPES.filter(r => r.mainDish === 'ryba'); break;
+          case 'veprove': candidates = RECIPES.filter(r => r.mainDish === 'veprove'); break;
+          case 'hovezi_kralik': candidates = RECIPES.filter(r => r.mainDish === 'hovezi' || r.mainDish === 'kralik'); break;
+          case 'bezmase': candidates = RECIPES.filter(r => r.mainDish === 'bezmase_zeleninove' && !r.isSweet); break;
+          case 'sladke': candidates = RECIPES.filter(r => r.isSweet); break;
+          default: candidates = RECIPES.filter(r => r.mainDish === 'bezmase_zeleninove');
+        }
+        const unused = candidates.filter(r => !usedIds.has(r.id));
+        const pool = unused.length > 0 ? unused : candidates;
+        const recipe = pool[i % pool.length];
+
+        const date = new Date(startDate);
+        let addedDays = 0, offset = 0;
+        while (addedDays < i) {
+          offset++;
+          const d = new Date(startDate);
+          d.setDate(d.getDate() + offset);
+          if (d.getDay() !== 0 && d.getDay() !== 6) addedDays++;
+        }
+        date.setDate(startDate.getDate() + offset);
+
+        days.push({ date, dayOfWeek: DAY_NAMES_GEN[date.getDay()], weekNumber: Math.floor(i/5)+1, recipe, portionMultiplier });
+        usedIds.add(recipe.id);
+      }
+
+      // Summary
+      const mainDishCounts = {}, sideDishCounts = {};
+      let sweetCount=0, friedCount=0, fishCount=0, meatlessCount=0;
+      for (const day of days) {
+        const r = day.recipe;
+        mainDishCounts[r.mainDish] = (mainDishCounts[r.mainDish]||0)+1;
+        if (r.sideDish) sideDishCounts[r.sideDish] = (sideDishCounts[r.sideDish]||0)+1;
+        if (r.isSweet) sweetCount++;
+        if (r.isFried) friedCount++;
+        if (r.mainDish === 'ryba') fishCount++;
+        if (r.mainDish === 'bezmase_zeleninove' || r.isSweet) meatlessCount++;
+      }
+
+      return {
+        days, summary: { mainDishCounts, sideDishCounts, sweetCount, friedCount, fishCount, meatlessCount, totalDays: days.length },
+        config: { ageCategory, dinerCount, workingDays, startDate, purchaseFrequencyDays: purchaseFreqDays }
+      };
+    }
+
+    function generateShoppingLists(menu) {
+      const { config, days } = menu;
+      const { dinerCount, purchaseFrequencyDays } = config;
+      const chunks = [];
+      for (let i = 0; i < days.length; i += purchaseFrequencyDays) {
+        chunks.push(days.slice(i, i + purchaseFrequencyDays));
+      }
+      const lists = [];
+      for (let ci = 0; ci < chunks.length; ci++) {
+        const chunk = chunks[ci];
+        const purchaseDate = new Date(chunk[0].date);
+        purchaseDate.setDate(purchaseDate.getDate() - 1);
+        const ingredientMap = new Map();
+        for (const day of chunk) {
+          const mult = day.portionMultiplier * dinerCount;
+          const allIng = [...day.recipe.soupIngredients, ...day.recipe.mainIngredients, ...day.recipe.garnishIngredients];
+          for (const ing of allIng) {
+            const ex = ingredientMap.get(ing.name);
+            if (ex) { ex.grams += ing.grams * mult; }
+            else { ingredientMap.set(ing.name, { grams: ing.grams * mult, group: ing.group }); }
+          }
+        }
+        const items = [];
+        for (const [name, data] of ingredientMap) {
+          const totalGrams = Math.round(data.grams);
+          items.push({ name, totalGrams, totalKg: Math.round(totalGrams/100)/10, group: data.group, portions: chunk.length * dinerCount });
+        }
+        items.sort((a,b) => a.group !== b.group ? a.group.localeCompare(b.group) : a.name.localeCompare(b.name));
+        const estimatedTotalCost = Math.round(chunk.reduce((s,d) => s + d.recipe.estimatedCostPerPortion * dinerCount * d.portionMultiplier, 0));
+        lists.push({ orderNumber: ci+1, purchaseDate, forDays: chunk.map(d => ({date:d.date, recipeName:d.recipe.name})), items, estimatedTotalCost });
+      }
+      return lists;
+    }
+
+    function fmtDate(d) { return d.getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear(); }
+
+    function setupGenerator() {
+      document.getElementById('g-run').addEventListener('click', () => {
+        const age = document.getElementById('g-age').value;
+        const diners = parseInt(document.getElementById('g-diners').value) || 100;
+        const startStr = document.getElementById('g-start').value;
+        const freq = parseInt(document.getElementById('g-freq').value);
+        const startDate = new Date(startStr + 'T00:00:00');
+
+        const menu = generateMenu(age, diners, startDate, freq);
+        const shopping = generateShoppingLists(menu);
+
+        document.getElementById('g-output').style.display = '';
+
+        // Summary
+        const s = menu.summary;
+        const catLabel = {drubez:'Drubez',ryba:'Ryba',veprove:'Veprove',hovezi:'Hovezi',kralik:'Kralik',bezmase_zeleninove:'Bezmase',sladke_jidlo:'Sladke jidlo'};
+        let sumHtml = '<table><tr><th>Kategorie</th><th>Pocet</th></tr>';
+        for (const [k,v] of Object.entries(s.mainDishCounts)) {
+          sumHtml += '<tr><td>'+(catLabel[k]||k)+'</td><td class="num">'+v+'x</td></tr>';
+        }
+        sumHtml += '<tr><td><strong>Celkem dnu</strong></td><td class="num"><strong>'+s.totalDays+'</strong></td></tr>';
+        sumHtml += '<tr><td>Bezmase celkem</td><td class="num">'+s.meatlessCount+'x</td></tr>';
+        sumHtml += '<tr><td>Ryby celkem</td><td class="num">'+s.fishCount+'x</td></tr>';
+        sumHtml += '<tr><td>Sladke celkem</td><td class="num">'+s.sweetCount+'x</td></tr>';
+        sumHtml += '<tr><td>Smazene celkem</td><td class="num">'+s.friedCount+'x</td></tr>';
+        sumHtml += '</table>';
+        sumHtml += '<p style="margin-top:.5rem;color:var(--text-muted)">Vekova kategorie: '+age+' let | Pocet stravniku: '+diners+' | Porcni koeficient: '+PORTION_MULT[age]+'</p>';
+        document.getElementById('g-summary').innerHTML = sumHtml;
+
+        // Menu day-by-day
+        let menuHtml = '';
+        let currentWeek = 0;
+        for (const day of menu.days) {
+          if (day.weekNumber !== currentWeek) {
+            if (currentWeek > 0) menuHtml += '</div>';
+            currentWeek = day.weekNumber;
+            menuHtml += '<h3 style="margin-top:1rem;">Tyden '+currentWeek+'</h3><div>';
+          }
+          const r = day.recipe;
+          const mult = day.portionMultiplier;
+          menuHtml += '<div class="card" style="margin:.5rem 0;padding:.75rem;">';
+          menuHtml += '<h4>'+day.dayOfWeek+' '+fmtDate(day.date)+' — '+r.name+'</h4>';
+          menuHtml += '<p><strong>Polevka:</strong> '+r.soup+'</p>';
+          menuHtml += '<p><strong>Hlavni jidlo:</strong> '+r.name+'</p>';
+          if (r.garnish) menuHtml += '<p><strong>Obloha:</strong> '+r.garnish+'</p>';
+          menuHtml += '<p><strong>Napoj:</strong> '+r.beverage+'</p>';
+          menuHtml += '<p><strong>Alergeny:</strong> '+r.allergens.join(', ')+'</p>';
+
+          // Ingredients table
+          menuHtml += '<details><summary>Ingredience a gramaze (na 1 porci / na '+diners+' porci)</summary>';
+          menuHtml += '<table><tr><th>Surovina</th><th>1 porce</th><th>'+diners+' porci</th><th>Skupina</th></tr>';
+          const allIng = [{label:'Polevka',items:r.soupIngredients},{label:'Hlavni chod',items:r.mainIngredients}];
+          if (r.garnishIngredients.length) allIng.push({label:'Obloha',items:r.garnishIngredients});
+          for (const section of allIng) {
+            menuHtml += '<tr><td colspan="4" style="background:var(--primary-light);font-weight:600;">'+section.label+'</td></tr>';
+            for (const ing of section.items) {
+              const perOne = Math.round(ing.grams * mult);
+              const total = Math.round(ing.grams * mult * diners);
+              const totalStr = total >= 1000 ? (total/1000).toFixed(1)+' kg' : total+' g';
+              menuHtml += '<tr><td>'+ing.name+'</td><td class="num">'+perOne+' g</td><td class="num">'+totalStr+'</td><td>'+(GROUP_LABELS[ing.group]||ing.group)+'</td></tr>';
+            }
+          }
+          menuHtml += '</table></details>';
+
+          // Instructions
+          menuHtml += '<details><summary>Postup pripravy</summary><p style="padding:.5rem;">'+r.instructions+'</p></details>';
+          menuHtml += '</div>';
+        }
+        if (currentWeek > 0) menuHtml += '</div>';
+        document.getElementById('g-menu').innerHTML = menuHtml;
+
+        // Shopping lists
+        let shopHtml = '';
+        for (const list of shopping) {
+          shopHtml += '<div class="card" style="margin:.75rem 0;padding:.75rem;">';
+          shopHtml += '<h3>Nakup c. '+list.orderNumber+' — '+fmtDate(list.purchaseDate)+'</h3>';
+          shopHtml += '<p><strong>Pro dny:</strong></p><ul>';
+          for (const d of list.forDays) {
+            shopHtml += '<li>'+fmtDate(d.date)+' — '+d.recipeName+'</li>';
+          }
+          shopHtml += '</ul>';
+          shopHtml += '<table><tr><th>Surovina</th><th>Mnozstvi</th><th>Skupina</th></tr>';
+          let curGroup = '';
+          for (const item of list.items) {
+            if (item.group !== curGroup) {
+              curGroup = item.group;
+              shopHtml += '<tr><td colspan="3" style="background:var(--primary-light);font-weight:600;">'+(GROUP_LABELS[curGroup]||curGroup)+'</td></tr>';
+            }
+            const amt = item.totalKg >= 1 ? item.totalKg+' kg' : item.totalGrams+' g';
+            shopHtml += '<tr><td>'+item.name+'</td><td class="num">'+amt+'</td><td>'+(GROUP_LABELS[item.group]||item.group)+'</td></tr>';
+          }
+          shopHtml += '</table>';
+          shopHtml += '<p style="margin-top:.5rem;"><strong>Odhadovana cena: '+list.estimatedTotalCost.toLocaleString('cs-CZ')+' Kc</strong></p>';
+          shopHtml += '</div>';
+        }
+        document.getElementById('g-shopping').innerHTML = shopHtml;
+      });
+    }
+
+    setupGenerator();
   </script>
 </body>
 </html>
