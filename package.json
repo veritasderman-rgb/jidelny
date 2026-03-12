@@ -2,12 +2,14 @@
   "name": "jidelny",
   "version": "1.0.0",
   "description": "Práce s vyhláškou o stravování",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp -r src/web/public dist/web/public",
+    "start": "npm run build && node dist/web/server.js",
     "test": "node --test dist/tests/*.test.js",
-    "pretest": "tsc"
+    "pretest": "tsc && cp -r src/web/public dist/web/public"
   },
   "repository": {
     "type": "git",
@@ -17,7 +19,11 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/node": "^25.4.0",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
   }
 }
