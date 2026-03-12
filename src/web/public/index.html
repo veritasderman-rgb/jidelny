@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Školní stravování ČR — Přehled požadavků</title>
+  <style>
+    :root {
+      --bg: #f8f9fa;
+      --card: #fff;
+      --primary: #2563eb;
+      --primary-light: #dbeafe;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #16a34a;
+      --error: #dc2626;
+      --warning: #d97706;
+      --info: #2563eb;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 1.5rem 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    }
+
+    header h1 { font-size: 1.5rem; font-weight: 700; }
+    header p { opacity: .85; font-size: .9rem; margin-top: .25rem; }
+
+    nav {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0;
+      padding: 0 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+
+    nav button {
+      background: none;
+      border: none;
+      padding: .75rem 1rem;
+      cursor: pointer;
+      font-size: .875rem;
+      color: var(--text-muted);
+      border-bottom: 3px solid transparent;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+
+    nav button:hover { color: var(--primary); }
+    nav button.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      font-weight: 600;
+    }
+
+    main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .card {
+      background: var(--card);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card h2 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      color: var(--primary);
+      border-bottom: 2px solid var(--primary-light);
+      padding-bottom: .5rem;
+    }
+
+    .card h3 {
+      font-size: 1rem;
+      margin: 1rem 0 .5rem;
+      color: var(--text);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .85rem;
+      margin-bottom: 1rem;
+    }
+
+    th, td {
+      padding: .5rem .75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--primary-light);
+      font-weight: 600;
+      color: var(--primary);
+      position: sticky;
+      top: 48px;
+    }
+
+    tr:hover { background: #f1f5f9; }
+
+    td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+    .badge {
+      display: inline-block;
+      padding: .15rem .5rem;
+      border-radius: 4px;
+      font-size: .75rem;
+      font-weight: 600;
+    }
+    .badge-error { background: #fef2f2; color: var(--error); }
+    .badge-warning { background: #fffbeb; color: var(--warning); }
+    .badge-success { background: #f0fdf4; color: var(--success); }
+    .badge-info { background: var(--primary-light); color: var(--info); }
+
+    .allergen-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .allergen-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      display: flex;
+      gap: .75rem;
+      align-items: flex-start;
+    }
+
+    .allergen-num {
+      background: var(--primary);
+      color: #fff;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: .85rem;
+      flex-shrink: 0;
+    }
+
+    .allergen-info h4 { font-size: .9rem; margin-bottom: .15rem; }
+    .allergen-info p { font-size: .78rem; color: var(--text-muted); }
+    .allergen-info .tag {
+      display: inline-block;
+      background: #fef3c7;
+      color: #92400e;
+      font-size: .7rem;
+      padding: .1rem .4rem;
+      border-radius: 3px;
+      margin-top: .25rem;
+    }
+
+    .banned-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: .75rem;
+    }
+
+    .banned-item {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 6px;
+      padding: .75rem;
+    }
+    .banned-item strong { color: var(--error); font-size: .85rem; }
+    .banned-item p { font-size: .78rem; color: var(--text-muted); margin-top: .2rem; }
+
+    .beverage-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+    }
+    .beverage-ok {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 6px;
+      padding: .4rem .75rem;
+      font-size: .82rem;
+    }
+    .beverage-bad {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 6px;
+      padding: .4rem .75rem;
+      font-size: .82rem;
+    }
+
+    /* Validation form */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .form-group label {
+      display: block;
+      font-size: .82rem;
+      font-weight: 600;
+      margin-bottom: .3rem;
+      color: var(--text-muted);
+    }
+    .form-group select, .form-group input {
+      width: 100%;
+      padding: .5rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: .85rem;
+    }
+
+    button.btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: .6rem 1.5rem;
+      border-radius: 6px;
+      font-size: .9rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.btn:hover { opacity: .9; }
+
+    .result-msg {
+      padding: .5rem .75rem;
+      border-radius: 6px;
+      margin-bottom: .5rem;
+      font-size: .83rem;
+    }
+    .result-msg.error { background: #fef2f2; border-left: 4px solid var(--error); }
+    .result-msg.warning { background: #fffbeb; border-left: 4px solid var(--warning); }
+    .result-msg.info { background: var(--primary-light); border-left: 4px solid var(--info); }
+
+    .tolerance-note {
+      font-size: .78rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .info-box {
+      background: var(--primary-light);
+      border: 1px solid #93c5fd;
+      border-radius: 6px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      font-size: .85rem;
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 0 .25rem; }
+      nav button { padding: .6rem .5rem; font-size: .75rem; }
+      main { padding: 1rem; }
+      .card { padding: 1rem; }
+      table { font-size: .75rem; }
+      th, td { padding: .35rem .4rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Skolni stravovani CR</h1>
+    <p>Prehled pozadavku dle vyhlasky 107/2005 Sb. a novely 310/2025 Sb.</p>
+  </header>
+
+  <nav id="tabs">
+    <button class="active" data-tab="old-basket">Stary kos</button>
+    <button data-tab="new-basket">Novy kos</button>
+    <button data-tab="flexible">Flexibilni kos</button>
+    <button data-tab="allergens">Alergeny</button>
+    <button data-tab="financial">Financni normativy</button>
+    <button data-tab="energy">Energie</button>
+    <button data-tab="frequency">Pestrost</button>
+    <button data-tab="restrictions">Omezeni</button>
+    <button data-tab="validator">Validator</button>
+  </nav>
+
+  <main>
+    <!-- STARY KOS -->
+    <div id="old-basket" class="tab-content active">
+      <div class="card">
+        <h2>Stary spotrebni kos (107/2005 Sb.)</h2>
+        <div class="info-box">
+          Gramaze v g "jak nakoupeno" na stravnika a den. Platny do 31. 8. 2026.
+          Mesicni prumerna spotreba s toleranci ±25 %. Tuky a cukr = horni limit (75–100 %).
+          Zelenina, ovoce, lusteniny — zadouci prekracovat.
+        </div>
+
+        <h3>Obed (skoly) / presnidavka + obed + svacina (MS)</h3>
+        <div id="old-basket-lunch-table"></div>
+
+        <h3>Celodenni stravovani</h3>
+        <div id="old-basket-full-table"></div>
+
+        <h3>Tolerance</h3>
+        <div id="old-tolerances-table"></div>
+      </div>
+    </div>
+
+    <!-- NOVY KOS -->
+    <div id="new-basket" class="tab-content">
+      <div class="card">
+        <h2>Novy spotrebni kos (310/2025 Sb.) — Standardni</h2>
+        <div class="info-box">
+          Gramaze v g ciste hmotnosti (jedly podil) na stravnika a den.
+          Ucinnost od 1. 9. 2025, prechodne obdobi do 31. 8. 2026.
+          Potravinove skupiny zredukovany z 10 na 9.
+        </div>
+
+        <h3>Obed</h3>
+        <div id="new-basket-lunch-table"></div>
+
+        <h3>Celodenni stravovani</h3>
+        <div id="new-basket-full-table"></div>
+
+        <h3>Tolerance (Tabulka c. 3)</h3>
+        <div id="new-tolerances-table"></div>
+
+        <h3>Rozlozeni po jidlech — 4–6 let (priklad)</h3>
+        <div id="meal-breakdown-table"></div>
+      </div>
+    </div>
+
+    <!-- FLEXIBILNI KOS -->
+    <div id="flexible" class="tab-content">
+      <div class="card">
+        <h2>Flexibilni spotrebni kos (Priloha c. 1a)</h2>
+        <div class="info-box">
+          Alternativni kos s vyssi variabilitou. Maso a ryby mohou individualne klesnout na 0 %,
+          ale soucet <strong>maso + ryby + lusteniny</strong> musi splnit minimalni hodnoty.
+        </div>
+
+        <h3>Minimalni soucet (maso + ryby + lusteniny) — Obed (g)</h3>
+        <div id="flex-lunch-table"></div>
+
+        <h3>Minimalni soucet — Celodenni (g)</h3>
+        <div id="flex-full-table"></div>
+      </div>
+    </div>
+
+    <!-- ALERGENY -->
+    <div id="allergens" class="tab-content">
+      <div class="card">
+        <h2>14 povinnych alergenu (EU 1169/2011)</h2>
+        <div class="info-box">
+          Povinnost informovat o alergenech u nebalenych pokrmu a jidel v hromadnem stravovani.
+          U obilovin (1) a orechu (8) nutno identifikovat konkretni druh.
+        </div>
+        <div id="allergen-grid" class="allergen-grid"></div>
+      </div>
+    </div>
+
+    <!-- FINANCNI NORMATIVY -->
+    <div id="financial" class="tab-content">
+      <div class="card">
+        <h2>Financni normativy (Priloha c. 2, od 1. 9. 2025)</h2>
+        <div class="info-box">
+          Hodnoty v Kc na stravnika a den. Sportovni gymnazia a tanecni konzervatore: horni limit navysen az o 50 %.
+        </div>
+        <div id="financial-table"></div>
+      </div>
+    </div>
+
+    <!-- ENERGIE -->
+    <div id="energy" class="tab-content">
+      <div class="card">
+        <h2>Energeticka distribuce a makronutrienty</h2>
+
+        <h3>Podil jidel na dennim energetickem prijmu (%)</h3>
+        <div id="energy-dist-table"></div>
+
+        <h3>Orientacni energeticke hodnoty obeda (kcal)</h3>
+        <div id="lunch-energy-table"></div>
+
+        <h3>Porcni koeficienty (od dospele porce)</h3>
+        <div id="portion-table"></div>
+
+        <h3>Makronutrientove pomery</h3>
+        <div id="macro-info"></div>
+      </div>
+    </div>
+
+    <!-- PESTROST -->
+    <div id="frequency" class="tab-content">
+      <div class="card">
+        <h2>Pravidla pestrosti jidelnicku</h2>
+        <div class="info-box">
+          Referencni obdobi: 20 stravovacich dnu za mesic.
+          Zelenina nebo ovoce ke kazdemu jidlu povinne (od 2025).
+        </div>
+
+        <h3>Frekvence hlavnich jidel (20 dnu/mesic)</h3>
+        <div id="main-freq-table"></div>
+
+        <h3>Frekvence priloh (20 dnu/mesic)</h3>
+        <div id="side-freq-table"></div>
+
+        <h3>Dalsi omezeni pestrosti</h3>
+        <div id="other-limits"></div>
+      </div>
+    </div>
+
+    <!-- OMEZENI -->
+    <div id="restrictions" class="tab-content">
+      <div class="card">
+        <h2>Omezeni cukru, soli, tuku</h2>
+        <div id="limits-tables"></div>
+      </div>
+
+      <div class="card">
+        <h2>Zakazane potraviny a ingredience</h2>
+        <div id="banned-list" class="banned-list"></div>
+      </div>
+
+      <div class="card">
+        <h2>Napoje</h2>
+        <h3>Povolene napoje</h3>
+        <div id="allowed-bev" class="beverage-list"></div>
+        <h3 style="margin-top:1rem;">Nevhodne pro deti</h3>
+        <div id="unsuitable-bev" class="beverage-list"></div>
+      </div>
+
+      <div class="card">
+        <h2>Pamlskova vyhlaska (282/2016 Sb.) — Automaty a bufety</h2>
+        <div id="vending-table"></div>
+      </div>
+    </div>
+
+    <!-- VALIDATOR -->
+    <div id="validator" class="tab-content">
+      <div class="card">
+        <h2>Validace spotrebniho kose</h2>
+        <div class="info-box">
+          Zadejte prumernou denni spotrebu za mesic a system overi plneni spotrebniho kose.
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Rezim kose</label>
+            <select id="v-regime">
+              <option value="old">Stary kos (107/2005)</option>
+              <option value="new_standard">Novy standardni (310/2025)</option>
+              <option value="new_flexible">Novy flexibilni</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Vekova kategorie</label>
+            <select id="v-age"></select>
+          </div>
+          <div class="form-group">
+            <label>Typ stravovani</label>
+            <select id="v-plan">
+              <option value="false">Obed</option>
+              <option value="true">Celodenni</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Pocet dnu</label>
+            <input type="number" id="v-days" value="20" min="1" max="31">
+          </div>
+        </div>
+
+        <h3>Denni prumerne gramaze (g)</h3>
+        <div id="v-groups" class="form-grid"></div>
+
+        <button class="btn" id="v-run" style="margin-top:1rem;">Validovat</button>
+
+        <div id="v-results" style="margin-top:1rem;"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Tab switching
+    document.querySelectorAll('#tabs button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#tabs button').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    const FOOD_GROUP_LABELS = {
+      // old
+      maso: 'Maso', ryby: 'Ryby', mleko_tekute: 'Mleko tekute',
+      mlecne_vyrobky: 'Mlecne vyrobky', tuky_volne: 'Tuky volne',
+      cukr_volny: 'Cukr volny', zelenina: 'Zelenina', ovoce: 'Ovoce',
+      brambory: 'Brambory', lusteniny: 'Lusteniny',
+      // new
+      ryby_korysi_mekkýsi: 'Ryby, korysi, mekkýsi',
+      mlecne_vyrobky_mleko: 'Mlecne vyr./mleko',
+      cukry_volne: 'Cukry volne',
+      zelenina_ovoce: 'Zelenina + ovoce',
+      brambory_hlízy: 'Brambory + hlízy',
+      celozrnne_obiloviny: 'Celozrnne obiloviny',
+    };
+
+    function label(key) { return FOOD_GROUP_LABELS[key] || key; }
+
+    function makeTable(headers, rows) {
+      let html = '<table><thead><tr>';
+      headers.forEach(h => html += `<th>${h}</th>`);
+      html += '</tr></thead><tbody>';
+      rows.forEach(row => {
+        html += '<tr>';
+        row.forEach((cell, i) => {
+          html += i > 0 ? `<td class="num">${cell}</td>` : `<td>${cell}</td>`;
+        });
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      return html;
+    }
+
+    async function fetchJson(url) {
+      const r = await fetch(url);
+      return r.json();
+    }
+
+    // --- Load data ---
+
+    async function loadOldBasket() {
+      const data = await fetchJson('/api/old-basket');
+      const ageKeys = ['3-6', '7-10', '11-14', '15-18'];
+
+      function renderBasket(basket, containerId) {
+        const headers = ['Skupina', ...ageKeys.map(k => k + ' let')];
+        const rows = Object.entries(basket).map(([group, vals]) =>
+          [label(group), ...ageKeys.map(k => vals[k] + ' g')]
+        );
+        document.getElementById(containerId).innerHTML = makeTable(headers, rows);
+      }
+
+      renderBasket(data.lunch, 'old-basket-lunch-table');
+      renderBasket(data.fullDay, 'old-basket-full-table');
+
+      const tolHeaders = ['Skupina', 'Minimum (%)', 'Maximum (%)'];
+      const tolRows = Object.entries(data.tolerances).map(([group, tol]) => [
+        label(group),
+        tol.minPercent + ' %',
+        tol.maxPercent !== null ? tol.maxPercent + ' %' : 'bez limitu',
+      ]);
+      document.getElementById('old-tolerances-table').innerHTML = makeTable(tolHeaders, tolRows);
+    }
+
+    async function loadNewBasket() {
+      const data = await fetchJson('/api/new-basket');
+      const ageKeys = ['2-3', '4-6', '7-10', '11-14', '15+'];
+
+      function renderBasket(basket, containerId) {
+        const headers = ['Skupina', ...ageKeys.map(k => k + (k === '15+' ? '' : ' let'))];
+        const rows = Object.entries(basket).map(([group, vals]) =>
+          [label(group), ...ageKeys.map(k => vals[k] + ' g')]
+        );
+        document.getElementById(containerId).innerHTML = makeTable(headers, rows);
+      }
+
+      renderBasket(data.lunch, 'new-basket-lunch-table');
+      renderBasket(data.fullDay, 'new-basket-full-table');
+
+      const tolHeaders = ['Skupina', 'Minimum (%)', 'Maximum (%)'];
+      const tolRows = Object.entries(data.tolerances).map(([group, tol]) => [
+        label(group),
+        tol.minPercent + ' %',
+        tol.maxPercent !== null ? tol.maxPercent + ' %' : 'bez limitu',
+      ]);
+      document.getElementById('new-tolerances-table').innerHTML = makeTable(tolHeaders, tolRows);
+
+      // Meal breakdown
+      const meals = ['snidane', 'presnidavka', 'obed', 'svacina', 'vecere'];
+      const mealLabels = { snidane: 'Snidane', presnidavka: 'Presnidavka', obed: 'Obed', svacina: 'Svacina', vecere: 'Vecere' };
+      const groups = Object.keys(data.mealBreakdown4_6.obed);
+      const mbHeaders = ['Jidlo', ...groups.map(g => label(g))];
+      const mbRows = meals.map(m => [
+        mealLabels[m],
+        ...groups.map(g => data.mealBreakdown4_6[m][g] + ' g'),
+      ]);
+      document.getElementById('meal-breakdown-table').innerHTML = makeTable(mbHeaders, mbRows);
+
+      // Flexible
+      const flexLunchHeaders = ['', ...ageKeys.map(k => k + (k === '15+' ? '' : ' let'))];
+      document.getElementById('flex-lunch-table').innerHTML = makeTable(
+        flexLunchHeaders,
+        [['Min. soucet', ...ageKeys.map(k => data.flexibleMinSumLunch[k] + ' g')]]
+      );
+      document.getElementById('flex-full-table').innerHTML = makeTable(
+        flexLunchHeaders,
+        [['Min. soucet', ...ageKeys.map(k => data.flexibleMinSumFullDay[k] + ' g')]]
+      );
+    }
+
+    async function loadAllergens() {
+      const data = await fetchJson('/api/allergens');
+      const grid = document.getElementById('allergen-grid');
+      grid.innerHTML = data.map(a => `
+        <div class="allergen-card">
+          <div class="allergen-num">${a.number}</div>
+          <div class="allergen-info">
+            <h4>${a.nameCz}</h4>
+            <p>${a.note}</p>
+            ${a.requiresSpecificType ? '<span class="tag">Nutno specifikovat druh</span>' : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function loadFinancial() {
+      const data = await fetchJson('/api/financial');
+      const ageKeys = ['2-3', '4-6', '7-10', '11-14', '15+'];
+      const meals = ['snidane', 'presnidavka', 'obed', 'svacina', 'vecere', 'celodenni', 'napoje_ms'];
+      const mealLabels = {
+        snidane: 'Snidane', presnidavka: 'Presnidavka', obed: 'Obed',
+        svacina: 'Svacina', vecere: 'Vecere', celodenni: 'Celodenni', napoje_ms: 'Napoje MS',
+      };
+
+      const headers = ['Jidlo', ...ageKeys.map(k => k + (k === '15+' ? '' : ' let'))];
+      const rows = meals.map(m => [
+        mealLabels[m],
+        ...ageKeys.map(k => {
+          const norm = data.normatives[k][m];
+          return norm ? `${norm.min}–${norm.max} Kc` : '—';
+        }),
+      ]);
+      document.getElementById('financial-table').innerHTML = makeTable(headers, rows);
+    }
+
+    async function loadEnergy() {
+      const data = await fetchJson('/api/energy');
+
+      // Distribution
+      const distHeaders = ['Jidlo', 'Podil (%)'];
+      const distLabels = { snidane: 'Snidane', presnidavka: 'Presnidavka', obed: 'Obed', svacina: 'Svacina', vecere: 'Vecere' };
+      const distRows = Object.entries(data.distribution).map(([k, v]) => [distLabels[k] || k, v + ' %']);
+      document.getElementById('energy-dist-table').innerHTML = makeTable(distHeaders, distRows);
+
+      // Lunch energy
+      const leHeaders = ['Vek', 'Min (kcal)', 'Max (kcal)'];
+      const leRows = Object.entries(data.lunchEnergy).map(([k, v]) => [k + ' let', v.min, v.max]);
+      document.getElementById('lunch-energy-table').innerHTML = makeTable(leHeaders, leRows);
+
+      // Portion coefficients
+      const pcHeaders = ['Vek', 'Koeficient'];
+      const pcRows = Object.entries(data.portionCoefficients).map(([k, v]) => [k + ' let', v]);
+      document.getElementById('portion-table').innerHTML = makeTable(pcHeaders, pcRows);
+
+      // Macronutrients
+      const m = data.macronutrients;
+      document.getElementById('macro-info').innerHTML = `
+        <table>
+          <tr><td>Bilkoviny</td><td class="num">${m.protein.minEnergyPercent}–${m.protein.maxEnergyPercent} % energie, ~${m.protein.gramsPerKgPerDay} g/kg/den</td></tr>
+          <tr><td>Tuky</td><td class="num">${m.fat.minEnergyPercent}–${m.fat.maxEnergyPercent} % energie, nasycene < ${m.fat.saturatedMaxPercent} %</td></tr>
+          <tr><td>Pomer rostl./zivoc. tuky</td><td class="num">min. ${m.fat.plantToAnimalMinRatio}:1 ve prospech rostlinnych</td></tr>
+          <tr><td>Sacharidy</td><td class="num">${m.carbohydrates.minEnergyPercent}–${m.carbohydrates.maxEnergyPercent} % energie</td></tr>
+          <tr><td>Pridane cukry</td><td class="num">max. ${m.carbohydrates.addedSugarMaxPercent} % energie</td></tr>
+          <tr><td>Denni potreba tekutin</td><td class="num">${data.fluidNeeds.min}–${data.fluidNeeds.max} ml</td></tr>
+        </table>
+      `;
+    }
+
+    async function loadFrequency() {
+      const data = await fetchJson('/api/frequency');
+
+      const freqHeaders = ['Kategorie', 'Min/mesic', 'Max/mesic', 'Poznamka'];
+      const mainRows = data.mainDish.map(r => [
+        r.category, r.minPerMonth ?? '—', r.maxPerMonth ?? '—', r.description,
+      ]);
+      document.getElementById('main-freq-table').innerHTML = makeTable(freqHeaders, mainRows);
+
+      const sideRows = data.sideDish.map(r => [
+        r.category, r.minPerMonth ?? '—', r.maxPerMonth ?? '—', r.description,
+      ]);
+      document.getElementById('side-freq-table').innerHTML = makeTable(freqHeaders, sideRows);
+
+      document.getElementById('other-limits').innerHTML = `
+        <table>
+          <tr><td>Jemne pecivo u obedu</td><td class="num">max. ${data.pastryLimits.lunchMaxPerMonth}x/mesic</td></tr>
+          <tr><td>Jemne pecivo u svacin</td><td class="num">max. ${data.pastryLimits.snackMaxPerMonth}x/mesic</td></tr>
+          <tr><td>Jemne pecivo celodenni</td><td class="num">max. ${data.pastryLimits.fullDayMaxPerMonth}x/mesic</td></tr>
+          <tr><td>Smazena jidla (skoly)</td><td class="num">max. ${data.friedLimits.schoolMaxPerMonth}x/mesic</td></tr>
+          <tr><td>Smazena jidla (MS)</td><td class="num">${data.friedLimits.kindergartenMaxPerMonth}x (vyhybat se)</td></tr>
+          <tr><td>Slazene mlecne napoje u obedu</td><td class="num">max. ${data.sweetenedDairyLimits.lunchMaxPerMonth}x/mesic</td></tr>
+          <tr><td>Slazene mlecne napoje u svacin</td><td class="num">max. ${data.sweetenedDairyLimits.snackMaxPerMonth}x/mesic</td></tr>
+        </table>
+      `;
+    }
+
+    async function loadRestrictions() {
+      const data = await fetchJson('/api/restrictions');
+
+      document.getElementById('limits-tables').innerHTML = `
+        <h3>Sol</h3>
+        <table>
+          <tr><td>Polevky</td><td class="num">max. ${data.salt.soupPer10Portions.min}–${data.salt.soupPer10Portions.max} g na 10 porci</td></tr>
+          <tr><td>Hlavni jidla</td><td class="num">max. ${data.salt.mainCoursePer10Portions.max} g na 10 porci</td></tr>
+          <tr><td>Nakupovane doplnky</td><td class="num">max. ${data.salt.purchasedSupplementsPer100g.max} g/100 g</td></tr>
+          <tr><td>Koreni s obsahem soli</td><td class="num">max. ${data.salt.spiceMaxSaltPer100g} g/100 g (jinak zakazano)</td></tr>
+        </table>
+        <h3>Tuky</h3>
+        <table>
+          <tr><td>Pomer rostl./zivoc.</td><td class="num">min. ${data.fat.plantToAnimalMinRatio}:1</td></tr>
+          <tr><td>Nasycene tuky (doplnky)</td><td class="num">max. ${data.fat.purchasedSupplementsSaturatedPer100g} g/100 g</td></tr>
+          <tr><td>Nasycene tuky</td><td class="num">< ${data.fat.saturatedMaxEnergyPercent} % energie</td></tr>
+          <tr><td>Trans-tuky</td><td class="num">< ${data.fat.transMaxEnergyPercent} % energie</td></tr>
+        </table>
+        <h3>Cukry</h3>
+        <table>
+          <tr><td>Pridane cukry</td><td class="num">max. ${data.sugar.addedSugarMaxEnergyPercent} % energie</td></tr>
+          <tr><td>Nakupovane doplnky</td><td class="num">max. ${data.sugar.purchasedSupplementsPer100g} g/100 g</td></tr>
+        </table>
+      `;
+
+      // Banned
+      const bannedList = document.getElementById('banned-list');
+      bannedList.innerHTML = data.bannedItems.map(b => `
+        <div class="banned-item">
+          <strong>${b.nameCz}</strong>
+          <p>${b.description}</p>
+        </div>
+      `).join('');
+
+      // Beverages
+      document.getElementById('allowed-bev').innerHTML = data.allowedBeverages
+        .map(b => `<div class="beverage-ok">${b}</div>`).join('');
+      document.getElementById('unsuitable-bev').innerHTML = data.unsuitableBeverages
+        .map(b => `<div class="beverage-bad">${b}</div>`).join('');
+
+      // Vending
+      const vHeaders = ['Kategorie', 'Sol/100g', 'Nas. tuky/100g', 'Cukry/100g', 'Poznamka'];
+      const vRows = data.vendingLimits.map(v => [
+        v.category,
+        v.saltPer100g !== null ? v.saltPer100g + ' g' : '—',
+        v.saturatedFatPer100g !== null ? v.saturatedFatPer100g + ' g' : '—',
+        v.sugarPer100g !== null ? v.sugarPer100g + ' g' : '—',
+        v.note || '',
+      ]);
+      document.getElementById('vending-table').innerHTML = makeTable(vHeaders, vRows);
+    }
+
+    // --- Validator ---
+
+    const OLD_GROUPS = ['maso','ryby','mleko_tekute','mlecne_vyrobky','tuky_volne','cukr_volny','zelenina','ovoce','brambory','lusteniny'];
+    const NEW_GROUPS = ['maso','ryby_korysi_mekkýsi','mlecne_vyrobky_mleko','tuky_volne','cukry_volne','zelenina_ovoce','brambory_hlízy','celozrnne_obiloviny','lusteniny'];
+    const OLD_AGES = ['3-6','7-10','11-14','15-18'];
+    const NEW_AGES = ['2-3','4-6','7-10','11-14','15+'];
+
+    function setupValidator() {
+      const regimeEl = document.getElementById('v-regime');
+      const ageEl = document.getElementById('v-age');
+      const groupsEl = document.getElementById('v-groups');
+
+      function updateForm() {
+        const isOld = regimeEl.value === 'old';
+        const ages = isOld ? OLD_AGES : NEW_AGES;
+        const groups = isOld ? OLD_GROUPS : NEW_GROUPS;
+
+        ageEl.innerHTML = ages.map(a => `<option value="${a}">${a} let</option>`).join('');
+        groupsEl.innerHTML = groups.map(g => `
+          <div class="form-group">
+            <label>${label(g)}</label>
+            <input type="number" step="0.1" min="0" data-group="${g}" value="0">
+          </div>
+        `).join('');
+      }
+
+      regimeEl.addEventListener('change', updateForm);
+      updateForm();
+
+      document.getElementById('v-run').addEventListener('click', async () => {
+        const regime = regimeEl.value;
+        const ageCategory = ageEl.value;
+        const isFullDay = document.getElementById('v-plan').value === 'true';
+        const days = parseInt(document.getElementById('v-days').value, 10);
+
+        const groups = {};
+        document.querySelectorAll('#v-groups input').forEach(input => {
+          groups[input.dataset.group] = parseFloat(input.value) || 0;
+        });
+
+        const dailyConsumptions = Array.from({ length: days }, (_, i) => ({
+          date: new Date(2026, 0, i + 1).toISOString(),
+          groups,
+        }));
+
+        const res = await fetch('/api/validate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ regime, ageCategory, isFullDay, dailyConsumptions }),
+        });
+
+        const result = await res.json();
+        const resultsEl = document.getElementById('v-results');
+
+        if (result.valid) {
+          resultsEl.innerHTML = '<div class="result-msg info"><strong>Validace uspesna.</strong> Spotrebni kos je plnen spravne.</div>';
+        } else {
+          resultsEl.innerHTML = '';
+        }
+
+        if (result.messages) {
+          resultsEl.innerHTML += result.messages.map(m => `
+            <div class="result-msg ${m.severity}">
+              <span class="badge badge-${m.severity}">${m.severity.toUpperCase()}</span>
+              ${m.message}
+            </div>
+          `).join('');
+        }
+      });
+    }
+
+    // --- Init ---
+    Promise.all([
+      loadOldBasket(),
+      loadNewBasket(),
+      loadAllergens(),
+      loadFinancial(),
+      loadEnergy(),
+      loadFrequency(),
+      loadRestrictions(),
+    ]).then(() => {
+      setupValidator();
+    });
+  </script>
+</body>
+</html>
