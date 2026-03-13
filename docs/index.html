@@ -671,8 +671,9 @@
 
       <div id="g-output" style="display:none;">
         <div class="card">
-          <h2>Prehled vygenerovaneho jidelniku</h2>
-          <div id="g-stats"></div>
+          <h2>Jidelnicek po dnech s recepty</h2>
+          <p style="color:var(--text-muted);margin-bottom:1rem;font-size:.9rem;">Kliknete na nazev jidla pro zobrazeni podrobneho receptu, ingredienci a postupu pripravy.</p>
+          <div id="g-menu"></div>
         </div>
         <div class="card">
           <h2>Splnuje tento jidelnicek novou vyhlasku?</h2>
@@ -683,9 +684,8 @@
           <div id="g-compliance"></div>
         </div>
         <div class="card">
-          <h2>Jidelnicek po dnech s recepty</h2>
-          <p style="color:var(--text-muted);margin-bottom:1rem;font-size:.9rem;">Kliknete na nazev jidla pro zobrazeni podrobneho receptu, ingredienci a postupu pripravy.</p>
-          <div id="g-menu"></div>
+          <h2>Prehled vygenerovaneho jidelniku</h2>
+          <div id="g-stats"></div>
         </div>
         <div class="card">
           <h2>Nakupni seznamy</h2>
@@ -1538,6 +1538,68 @@
 
     function fmtDate(d) { return d.getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear(); }
 
+    function getMenuGroupAverages(menu) {
+      const groupTotals = {};
+      for (const day of menu.days) {
+        const mult = day.portionMultiplier;
+        const allIng = [...day.recipe.soupIngredients, ...day.recipe.mainIngredients, ...day.recipe.garnishIngredients];
+        for (const ing of allIng) {
+          groupTotals[ing.group] = (groupTotals[ing.group] || 0) + ing.grams * mult;
+        }
+      }
+      const totalDays = menu.days.length;
+      const avgs = {};
+      for (const [g, total] of Object.entries(groupTotals)) {
+        avgs[g] = totalDays > 0 ? total / totalDays : 0;
+      }
+      return avgs;
+    }
+
+    function checkMenuCompliance(menu, age) {
+      const basket = DATA.newBasket.lunch;
+      const tolerances = DATA.newBasket.tolerances;
+      const avgs = getMenuGroupAverages(menu);
+      for (const g of Object.keys(basket)) {
+        const target = basket[g][age];
+        if (target === undefined) continue;
+        const tol = tolerances[g];
+        const avg = avgs[g] || 0;
+        const minAllowed = target * (tol.minPercent / 100);
+        if (avg < minAllowed) return false;
+        if (tol.maxPercent !== null) {
+          const maxAllowed = target * (tol.maxPercent / 100);
+          if (avg > maxAllowed && (g.includes('tuky') || g.includes('cukry'))) return false;
+        }
+      }
+      return true;
+    }
+
+    function getMenuComplianceDetails(menu, age) {
+      const basket = DATA.newBasket.lunch;
+      const tolerances = DATA.newBasket.tolerances;
+      const avgs = getMenuGroupAverages(menu);
+      const rows = [];
+      for (const g of Object.keys(basket)) {
+        const target = basket[g][age];
+        if (target === undefined) continue;
+        const tol = tolerances[g];
+        const avg = avgs[g] || 0;
+        const minAllowed = target * (tol.minPercent / 100);
+        const maxAllowed = tol.maxPercent !== null ? target * (tol.maxPercent / 100) : null;
+        let status, badge;
+        if (avg < minAllowed) {
+          status = 'Pod minimem'; badge = 'badge-error';
+        } else if (maxAllowed !== null && avg > maxAllowed) {
+          badge = (g.includes('tuky') || g.includes('cukry')) ? 'badge-error' : 'badge-warning';
+          status = 'Prekroceno';
+        } else {
+          status = 'OK'; badge = 'badge-success';
+        }
+        rows.push({ group: g, label: GROUP_LABELS[g] || g, avg, target, minAllowed, maxAllowed, status, badge });
+      }
+      return rows;
+    }
+
     function setupGenerator() {
       document.getElementById('g-run').addEventListener('click', () => {
         const age = document.getElementById('g-age').value;
@@ -1546,7 +1608,14 @@
         const freq = parseInt(document.getElementById('g-freq').value);
         const startDate = new Date(startStr + 'T00:00:00');
 
-        const menu = generateMenu(age, diners, startDate, freq);
+        // Generate menu, retry up to 50 times until it complies with new basket
+        let menu, attempts = 0;
+        const MAX_ATTEMPTS = 50;
+        while (attempts < MAX_ATTEMPTS) {
+          menu = generateMenu(age, diners, startDate, freq);
+          attempts++;
+          if (checkMenuCompliance(menu, age)) break;
+        }
         const shopping = generateShoppingLists(menu);
 
         document.getElementById('g-output').style.display = '';
@@ -1564,49 +1633,19 @@
         sumHtml += '<tr><td>Sladke celkem</td><td class="num">'+s.sweetCount+'x</td></tr>';
         sumHtml += '<tr><td>Smazene celkem</td><td class="num">'+s.friedCount+'x</td></tr>';
         sumHtml += '</table>';
-        sumHtml += '<p style="margin-top:.5rem;color:var(--text-muted)">Vekova kategorie: '+age+' let | Pocet stravniku: '+diners+' | Porcni koeficient: '+PORTION_MULT[age]+'</p>';
+        sumHtml += '<p style="margin-top:.5rem;color:var(--text-muted)">Vekova kategorie: '+age+' let | Pocet stravniku: '+diners+' | Porcni koeficient: '+PORTION_MULT[age]+' | Pokusu: '+attempts+'/'+MAX_ATTEMPTS+'</p>';
         document.getElementById('g-stats').innerHTML = sumHtml;
 
-        // Compliance against new basket (vyhláška 310/2025)
-        const basket = DATA.newBasket.lunch;
-        const tolerances = DATA.newBasket.tolerances;
-        const groupTotals = {};
-        for (const day of menu.days) {
-          const mult = day.portionMultiplier;
-          const allIng = [...day.recipe.soupIngredients, ...day.recipe.mainIngredients, ...day.recipe.garnishIngredients];
-          for (const ing of allIng) {
-            groupTotals[ing.group] = (groupTotals[ing.group] || 0) + ing.grams * mult;
-          }
-        }
-        // Compute daily averages
-        const totalDays = menu.days.length;
+        // Compliance table against new basket (vyhlaska 310/2025)
+        const compResult = getMenuComplianceDetails(menu, age);
         let compHtml = '<table><tr><th>Skupina</th><th>Prumer/den</th><th>Norma</th><th>Min</th><th>Max</th><th>Stav</th></tr>';
-        const newGroups = Object.keys(basket);
-        for (const g of newGroups) {
-          const target = basket[g][age];
-          if (target === undefined) continue;
-          const tol = tolerances[g];
-          const avg = totalDays > 0 ? (groupTotals[g] || 0) / totalDays : 0;
-          const minAllowed = target * (tol.minPercent / 100);
-          const maxAllowed = tol.maxPercent !== null ? target * (tol.maxPercent / 100) : null;
-          let status, badge;
-          if (avg < minAllowed) {
-            status = 'Pod minimem'; badge = 'badge-error';
-          } else if (maxAllowed !== null && avg > maxAllowed) {
-            if (g.includes('tuky') || g.includes('cukry')) {
-              status = 'Prekroceno'; badge = 'badge-error';
-            } else {
-              status = 'Prekroceno'; badge = 'badge-warning';
-            }
-          } else {
-            status = 'OK'; badge = 'badge-success';
-          }
-          compHtml += '<tr><td>'+(GROUP_LABELS[g]||g)+'</td>';
-          compHtml += '<td class="num">'+avg.toFixed(1)+' g</td>';
-          compHtml += '<td class="num">'+target+' g</td>';
-          compHtml += '<td class="num">'+minAllowed.toFixed(1)+' g</td>';
-          compHtml += '<td class="num">'+(maxAllowed !== null ? maxAllowed.toFixed(1)+' g' : '–')+'</td>';
-          compHtml += '<td><span class="badge '+badge+'">'+status+'</span></td></tr>';
+        for (const row of compResult) {
+          compHtml += '<tr><td>'+row.label+'</td>';
+          compHtml += '<td class="num">'+row.avg.toFixed(1)+' g</td>';
+          compHtml += '<td class="num">'+row.target+' g</td>';
+          compHtml += '<td class="num">'+row.minAllowed.toFixed(1)+' g</td>';
+          compHtml += '<td class="num">'+(row.maxAllowed !== null ? row.maxAllowed.toFixed(1)+' g' : '–')+'</td>';
+          compHtml += '<td><span class="badge '+row.badge+'">'+row.status+'</span></td></tr>';
         }
         compHtml += '</table>';
         document.getElementById('g-compliance').innerHTML = compHtml;
