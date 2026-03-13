@@ -1551,7 +1551,7 @@
 
         document.getElementById('g-output').style.display = '';
 
-        // Summary
+        // Stats
         const s = menu.summary;
         const catLabel = {drubez:'Drubez',ryba:'Ryba',veprove:'Veprove',hovezi:'Hovezi',kralik:'Kralik',bezmase_zeleninove:'Bezmase',sladke_jidlo:'Sladke jidlo'};
         let sumHtml = '<table><tr><th>Kategorie</th><th>Pocet</th></tr>';
@@ -1565,7 +1565,51 @@
         sumHtml += '<tr><td>Smazene celkem</td><td class="num">'+s.friedCount+'x</td></tr>';
         sumHtml += '</table>';
         sumHtml += '<p style="margin-top:.5rem;color:var(--text-muted)">Vekova kategorie: '+age+' let | Pocet stravniku: '+diners+' | Porcni koeficient: '+PORTION_MULT[age]+'</p>';
-        document.getElementById('g-summary').innerHTML = sumHtml;
+        document.getElementById('g-stats').innerHTML = sumHtml;
+
+        // Compliance against new basket (vyhláška 310/2025)
+        const basket = DATA.newBasket.lunch;
+        const tolerances = DATA.newBasket.tolerances;
+        const groupTotals = {};
+        for (const day of menu.days) {
+          const mult = day.portionMultiplier;
+          const allIng = [...day.recipe.soupIngredients, ...day.recipe.mainIngredients, ...day.recipe.garnishIngredients];
+          for (const ing of allIng) {
+            groupTotals[ing.group] = (groupTotals[ing.group] || 0) + ing.grams * mult;
+          }
+        }
+        // Compute daily averages
+        const totalDays = menu.days.length;
+        let compHtml = '<table><tr><th>Skupina</th><th>Prumer/den</th><th>Norma</th><th>Min</th><th>Max</th><th>Stav</th></tr>';
+        const newGroups = Object.keys(basket);
+        for (const g of newGroups) {
+          const target = basket[g][age];
+          if (target === undefined) continue;
+          const tol = tolerances[g];
+          const avg = totalDays > 0 ? (groupTotals[g] || 0) / totalDays : 0;
+          const minAllowed = target * (tol.minPercent / 100);
+          const maxAllowed = tol.maxPercent !== null ? target * (tol.maxPercent / 100) : null;
+          let status, badge;
+          if (avg < minAllowed) {
+            status = 'Pod minimem'; badge = 'badge-error';
+          } else if (maxAllowed !== null && avg > maxAllowed) {
+            if (g.includes('tuky') || g.includes('cukry')) {
+              status = 'Prekroceno'; badge = 'badge-error';
+            } else {
+              status = 'Prekroceno'; badge = 'badge-warning';
+            }
+          } else {
+            status = 'OK'; badge = 'badge-success';
+          }
+          compHtml += '<tr><td>'+(GROUP_LABELS[g]||g)+'</td>';
+          compHtml += '<td class="num">'+avg.toFixed(1)+' g</td>';
+          compHtml += '<td class="num">'+target+' g</td>';
+          compHtml += '<td class="num">'+minAllowed.toFixed(1)+' g</td>';
+          compHtml += '<td class="num">'+(maxAllowed !== null ? maxAllowed.toFixed(1)+' g' : '–')+'</td>';
+          compHtml += '<td><span class="badge '+badge+'">'+status+'</span></td></tr>';
+        }
+        compHtml += '</table>';
+        document.getElementById('g-compliance').innerHTML = compHtml;
 
         // Menu day-by-day
         let menuHtml = '';
