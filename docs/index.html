@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Skolni stravovani CR — Generator jidelniku a prehled pozadavku</title>
+  <title>Školní stravování ČR — Generátor jídelníčku a přehled požadavků</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
@@ -152,6 +152,22 @@
     .tab-content.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
+    details summary {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    details summary::-webkit-details-marker { display: none; }
+    details summary::before {
+      content: '\25B6';
+      font-size: .7em;
+      transition: transform .2s;
+      color: var(--text-muted);
+    }
+    details[open] summary::before {
+      transform: rotate(90deg);
+    }
     .card {
       background: var(--card);
       border-radius: var(--radius);
@@ -742,23 +758,23 @@
 </head>
 <body>
   <header>
-    <h1>Skolni stravovani CR</h1>
-    <p>Nastroj pro skolni jidelny &mdash; generator jidelniku, kontrola souladu s vyhlaskou a prehled vsech pozadavku</p>
-    <span class="subtitle">Vyhlaska 107/2005 Sb. &bull; Novela 310/2025 Sb. &bull; Ucinnost od 1.&thinsp;9.&thinsp;2025</span>
+    <h1>Školní stravování ČR</h1>
+    <p>Nástroj pro školní jídelny &mdash; generátor jídelníčku, kontrola souladu s&nbsp;vyhláškou a&nbsp;přehled všech požadavků</p>
+    <span class="subtitle">Vyhláška 107/2005 Sb. &bull; Novela 310/2025 Sb. &bull; Účinnost od 1.&thinsp;9.&thinsp;2025</span>
   </header>
 
   <nav id="tabs">
-    <button class="active nav-highlight" data-tab="generator">Generator jidelniku</button>
-    <button data-tab="print-menu">Jidelnicek k tisku</button>
-    <button data-tab="new-basket">Novy kos 2025</button>
-    <button data-tab="old-basket">Stary kos</button>
-    <button data-tab="flexible">Flexibilni kos</button>
+    <button class="active nav-highlight" data-tab="generator">Generátor jídelníčku</button>
+    <button data-tab="print-menu">Jídelníček k&nbsp;tisku</button>
+    <button data-tab="new-basket">Nový koš 2025</button>
+    <button data-tab="old-basket">Starý koš</button>
+    <button data-tab="flexible">Flexibilní koš</button>
     <button data-tab="allergens">Alergeny</button>
-    <button data-tab="financial">Financni normativy</button>
+    <button data-tab="financial">Finanční normativy</button>
     <button data-tab="energy">Energie</button>
     <button data-tab="frequency">Pestrost</button>
-    <button data-tab="restrictions">Omezeni</button>
-    <button data-tab="validator">Validator kose</button>
+    <button data-tab="restrictions">Omezení</button>
+    <button data-tab="validator">Validátor koše</button>
   </nav>
 
   <main>
@@ -781,121 +797,165 @@
       </div>
 
       <div class="card">
-        <h2>Co se mění od 1.&thinsp;9.&thinsp;2025?</h2>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;">
-          <div style="background:var(--success-bg);border-radius:var(--radius-sm);padding:1rem;">
-            <strong style="color:var(--success);">Nový spotřební koš</strong>
-            <p style="font-size:.85rem;margin-top:.35rem;">Největší modernizace za posledních 30 let. Skupiny potravin nově odpovídají aktuálním výživovým doporučením.
-            Přibyly <strong>celozrnné obiloviny a&nbsp;pseudoobiloviny</strong> (pohanka, quinoa, amarant),
-            zelenina a&nbsp;ovoce se sloučily do jedné skupiny, stejně tak mléko a&nbsp;mléčné výrobky.</p>
+        <details>
+          <summary style="cursor:pointer;font-size:1.15rem;font-weight:700;padding:.5rem 0;">Co se mění od 1.&thinsp;9.&thinsp;2025?</summary>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-top:1rem;">
+            <div style="background:var(--success-bg);border-radius:var(--radius-sm);padding:1rem;">
+              <strong style="color:var(--success);">Nový spotřební koš</strong>
+              <p style="font-size:.85rem;margin-top:.35rem;">Největší modernizace za posledních 30 let. Skupiny potravin nově odpovídají aktuálním výživovým doporučením.
+              Přibyly <strong>celozrnné obiloviny a&nbsp;pseudoobiloviny</strong> (pohanka, quinoa, amarant),
+              zelenina a&nbsp;ovoce se sloučily do jedné skupiny, stejně tak mléko a&nbsp;mléčné výrobky.</p>
+            </div>
+            <div style="background:var(--info-bg);border-radius:var(--radius-sm);padding:1rem;">
+              <strong style="color:var(--info);">Více luštěnin a&nbsp;ryb</strong>
+              <p style="font-size:.85rem;margin-top:.35rem;">Porce luštěnin se navyšují zhruba o&nbsp;jednu polévkovou lžíci týdně na strávníka.
+              Ryby minimálně 1&times; za 14 dní. U&nbsp;nevýběrových jídelen přibudou 2&nbsp;bezmasá jídla měsíčně,
+              u&nbsp;výběrových 1&nbsp;bezmasý pokrm týdně navíc.</p>
+            </div>
+            <div style="background:var(--warning-bg);border-radius:var(--radius-sm);padding:1rem;">
+              <strong style="color:var(--warning);">Méně cukru a&nbsp;soli</strong>
+              <p style="font-size:.85rem;margin-top:.35rem;">Zákaz slazených nápojů (kromě ochuceného mléka max. 1&times; měsíčně u&nbsp;oběda).
+              Zákaz dehydratovaných výrobků (polévky, bujóny, omáčky). Zákaz ochucovadel s&nbsp;obsahem soli nad&nbsp;10&thinsp;g/100&thinsp;g.
+              Zákaz stolních sladidel.</p>
+            </div>
+            <div style="background:#faf5ff;border-radius:var(--radius-sm);padding:1rem;">
+              <strong style="color:#7c3aed;">Flexibilní koš</strong>
+              <p style="font-size:.85rem;margin-top:.35rem;">Nahrazuje dosavadní laktoovovegetariánský koš. U&nbsp;skupin Maso a&nbsp;Ryby připouští dolní mez plnění 0&thinsp;%.
+              Součet skupin Maso + Ryby + Luštěniny však musí odpovídat stanovenému minimu.
+              Je určen pro strávníky s&nbsp;vegetariánskými či vegánskými stravovacími potřebami.</p>
+            </div>
+            <div style="background:#fdf2f8;border-radius:var(--radius-sm);padding:1rem;">
+              <strong style="color:#db2777;">Kvalita surovin</strong>
+              <p style="font-size:.85rem;margin-top:.35rem;">Poměr rostlinných a&nbsp;živočišných tuků minimálně 2&nbsp;:&nbsp;1 ve prospěch rostlinných.
+              Zákaz palmového, palmojádrového a&nbsp;kokosového tuku. Plnění koše se sleduje v&nbsp;čisté hmotnosti potravin.
+              Od 1.&thinsp;9.&thinsp;2028 povinnost BIO potravin pro jídelny nad 180 strávníků.</p>
+            </div>
+            <div style="background:#f0fdf4;border-radius:var(--radius-sm);padding:1rem;">
+              <strong style="color:#16a34a;">Podpora pro jídelny</strong>
+              <p style="font-size:.85rem;margin-top:.35rem;">Cílem není sankcionovat, ale podpořit. Přechodné období běží do 31.&thinsp;8.&thinsp;2026.
+              K&nbsp;dispozici je tým ambasádorů &mdash; zkušených kuchařů a&nbsp;odborníků z&nbsp;praxe. Metodická podpora je zdarma.
+              Koš splněný na 75&thinsp;% znamená, že děti dostanou vše potřebné pro svůj růst a&nbsp;vývoj.</p>
+            </div>
           </div>
-          <div style="background:var(--info-bg);border-radius:var(--radius-sm);padding:1rem;">
-            <strong style="color:var(--info);">Více luštěnin a&nbsp;ryb</strong>
-            <p style="font-size:.85rem;margin-top:.35rem;">Porce luštěnin se navyšují zhruba o&nbsp;jednu polévkovou lžíci týdně na strávníka.
-            Ryby minimálně 1&times; za 14 dní. U&nbsp;nevýběrových jídelen přibudou 2&nbsp;bezmasá jídla měsíčně,
-            u&nbsp;výběrových 1&nbsp;bezmasý pokrm týdně navíc.</p>
-          </div>
-          <div style="background:var(--warning-bg);border-radius:var(--radius-sm);padding:1rem;">
-            <strong style="color:var(--warning);">Méně cukru a&nbsp;soli</strong>
-            <p style="font-size:.85rem;margin-top:.35rem;">Zákaz slazených nápojů (kromě ochuceného mléka max. 1&times; měsíčně u&nbsp;oběda).
-            Zákaz dehydratovaných výrobků (polévky, bujóny, omáčky). Zákaz ochucovadel s&nbsp;obsahem soli nad&nbsp;10&thinsp;g/100&thinsp;g.
-            Zákaz stolních sladidel.</p>
-          </div>
-          <div style="background:#faf5ff;border-radius:var(--radius-sm);padding:1rem;">
-            <strong style="color:#7c3aed;">Flexibilní koš</strong>
-            <p style="font-size:.85rem;margin-top:.35rem;">Nahrazuje dosavadní laktoovovegetariánský koš. U&nbsp;skupin Maso a&nbsp;Ryby připouští dolní mez plnění 0&thinsp;%.
-            Součet skupin Maso + Ryby + Luštěniny však musí odpovídat stanovenému minimu.
-            Je určen pro strávníky s&nbsp;vegetariánskými či vegánskými stravovacími potřebami.</p>
-          </div>
-          <div style="background:#fdf2f8;border-radius:var(--radius-sm);padding:1rem;">
-            <strong style="color:#db2777;">Kvalita surovin</strong>
-            <p style="font-size:.85rem;margin-top:.35rem;">Poměr rostlinných a&nbsp;živočišných tuků minimálně 2&nbsp;:&nbsp;1 ve prospěch rostlinných.
-            Zákaz palmového, palmojádrového a&nbsp;kokosového tuku. Plnění koše se sleduje v&nbsp;čisté hmotnosti potravin.
-            Od 1.&thinsp;9.&thinsp;2028 povinnost BIO potravin pro jídelny nad 180 strávníků.</p>
-          </div>
-          <div style="background:#f0fdf4;border-radius:var(--radius-sm);padding:1rem;">
-            <strong style="color:#16a34a;">Podpora pro jídelny</strong>
-            <p style="font-size:.85rem;margin-top:.35rem;">Cílem není sankcionovat, ale podpořit. Přechodné období běží do 31.&thinsp;8.&thinsp;2026.
-            K&nbsp;dispozici je tým ambasádorů &mdash; zkušených kuchařů a&nbsp;odborníků z&nbsp;praxe. Metodická podpora je zdarma.
-            Koš splněný na 75&thinsp;% znamená, že děti dostanou vše potřebné pro svůj růst a&nbsp;vývoj.</p>
-          </div>
-        </div>
+        </details>
       </div>
 
       <div class="card">
-        <h2>Praktické tipy pro jídelny</h2>
-        <div class="info-box" style="background:linear-gradient(135deg,#f0fdf4,#dcfce788);border-color:#86efac;">
-          <strong style="color:var(--success);">Vyhláška nevyžaduje žádné nové neznámé recepty!</strong>
-          Jídelníček může vypadat úplně tradičně &mdash; sekaná, svíčková, rajská omáčka &mdash;
-          stačí drobné úpravy: přidat celozrnnou složku do těstovin či knedlíků, nahradit část masa luštěninami,
-          používat olivový olej místo sádla a&nbsp;přidat zeleninu ke každému jídlu.
-        </div>
-        <ul style="font-size:.88rem;line-height:1.9;color:var(--text-secondary);">
-          <li><strong>Celozrnné obiloviny:</strong> Stačí drobné obohacení &mdash; přídavek krup nebo pohanky do mletého masa, použití celozrnné mouky na jíšku, celozrnné těstoviny, bulgur místo rýže.</li>
-          <li><strong>Luštěniny:</strong> Čočkové polévky, hrachová polévka, fazole do chili, cizrna do curry, čočka do boloňské omáčky &mdash; děti je často mají rády, aniž by věděly, že jde o&nbsp;luštěniny.</li>
-          <li><strong>Ryby:</strong> Rybí karbanátky, losos pečený v&nbsp;troubě, treska na smetaně &mdash; místo smažených ryb zkuste pečené, děti je přijímají lépe.</li>
-          <li><strong>Zelenina a&nbsp;ovoce:</strong> Salát ke každému jídlu, zelenina do polévek, ovoce jako dezert. Cílová hodnota je vysoká, ale polévka + salát + obloha ji snadno naplní.</li>
-          <li><strong>Méně soli:</strong> Vaření z&nbsp;čerstvých surovin namísto dehydratovaných. Používejte bylinky a&nbsp;koření pro chuť. Zákaz bujónů = vaření vlastního vývaru.</li>
-          <li><strong>Každé jídlo obsahuje:</strong> zeleninu či ovoce + zdroj sacharidů (obiloviny, brambory) + zdroj bílkovin (maso, ryby, luštěniny, mléčné výrobky) + zdroj tuků.</li>
-        </ul>
+        <details>
+          <summary style="cursor:pointer;font-size:1.15rem;font-weight:700;padding:.5rem 0;">Praktické tipy pro jídelny</summary>
+          <div class="info-box" style="background:linear-gradient(135deg,#f0fdf4,#dcfce788);border-color:#86efac;margin-top:1rem;">
+            <strong style="color:var(--success);">Vyhláška nevyžaduje žádné nové neznámé recepty!</strong>
+            Jídelníček může vypadat úplně tradičně &mdash; sekaná, svíčková, rajská omáčka &mdash;
+            stačí drobné úpravy: přidat celozrnnou složku do těstovin či knedlíků, nahradit část masa luštěninami,
+            používat olivový olej místo sádla a&nbsp;přidat zeleninu ke každému jídlu.
+          </div>
+          <ul style="font-size:.88rem;line-height:1.9;color:var(--text-secondary);">
+            <li><strong>Celozrnné obiloviny:</strong> Stačí drobné obohacení &mdash; přídavek krup nebo pohanky do mletého masa, použití celozrnné mouky na jíšku, celozrnné těstoviny, bulgur místo rýže.</li>
+            <li><strong>Luštěniny:</strong> Čočkové polévky, hrachová polévka, fazole do chili, cizrna do curry, čočka do boloňské omáčky &mdash; děti je často mají rády, aniž by věděly, že jde o&nbsp;luštěniny.</li>
+            <li><strong>Ryby:</strong> Rybí karbanátky, losos pečený v&nbsp;troubě, treska na smetaně &mdash; místo smažených ryb zkuste pečené, děti je přijímají lépe.</li>
+            <li><strong>Zelenina a&nbsp;ovoce:</strong> Salát ke každému jídlu, zelenina do polévek, ovoce jako dezert. Cílová hodnota je vysoká, ale polévka + salát + obloha ji snadno naplní.</li>
+            <li><strong>Méně soli:</strong> Vaření z&nbsp;čerstvých surovin namísto dehydratovaných. Používejte bylinky a&nbsp;koření pro chuť. Zákaz bujónů = vaření vlastního vývaru.</li>
+            <li><strong>Každé jídlo obsahuje:</strong> zeleninu či ovoce + zdroj sacharidů (obiloviny, brambory) + zdroj bílkovin (maso, ryby, luštěniny, mléčné výrobky) + zdroj tuků.</li>
+          </ul>
+        </details>
+      </div>
+
+      <div class="card">
+        <details>
+          <summary style="cursor:pointer;font-size:1.15rem;font-weight:700;padding:.5rem 0;">Často kladené otázky</summary>
+          <div style="margin-top:1rem;">
+            <div style="border-bottom:1px solid var(--border);padding:.75rem 0;">
+              <strong>Musíme od září 2025 úplně změnit jídelníček?</strong>
+              <p style="font-size:.88rem;color:var(--text-secondary);margin-top:.35rem;">Ne. Přechodné období trvá do 31.&thinsp;8.&thinsp;2026. Do té doby stačí postupně upravovat stávající recepty &mdash; většina tradičních jídel vyhovuje, stačí drobné úpravy (viz tipy výše).</p>
+            </div>
+            <div style="border-bottom:1px solid var(--border);padding:.75rem 0;">
+              <strong>Jak se liší gramáže &bdquo;jak nakoupeno&ldquo; vs. &bdquo;čistá hmotnost&ldquo;?</strong>
+              <p style="font-size:.88rem;color:var(--text-secondary);margin-top:.35rem;">Starý koš počítal gramáže &bdquo;jak nakoupeno&ldquo; (včetně kostí, slupek apod.). Nový koš počítá v&nbsp;<strong>čisté hmotnosti</strong> &mdash; jedlém podílu. Čísla proto vypadají nižší, ale skutečné porce se nemění.</p>
+            </div>
+            <div style="border-bottom:1px solid var(--border);padding:.75rem 0;">
+              <strong>Co znamená tolerance 75&ndash;125&thinsp;%?</strong>
+              <p style="font-size:.88rem;color:var(--text-secondary);margin-top:.35rem;">Měsíční průměrná spotřeba každé skupiny potravin se může pohybovat od 75&thinsp;% do 125&thinsp;% normy. U&nbsp;zeleniny, ovoce, luštěnin, celozrnných obilovin a&nbsp;ryb není horní limit &mdash; čím více, tím lépe.</p>
+            </div>
+            <div style="border-bottom:1px solid var(--border);padding:.75rem 0;">
+              <strong>Můžeme dál smažit řízky a&nbsp;bramboráky?</strong>
+              <p style="font-size:.88rem;color:var(--text-secondary);margin-top:.35rem;">Ano, smažená jídla nejsou zakázaná. Vyhláška pouze doporučuje omezit frekvenci smažení a&nbsp;preferovat pečení nebo dušení. Důležité je dodržet poměr rostlinných a&nbsp;živočišných tuků (2&nbsp;:&nbsp;1).</p>
+            </div>
+            <div style="border-bottom:1px solid var(--border);padding:.75rem 0;">
+              <strong>Co s&nbsp;bujóny a&nbsp;instantními polévkami?</strong>
+              <p style="font-size:.88rem;color:var(--text-secondary);margin-top:.35rem;">Dehydratované výrobky (bujóny, instantní polévky, instantní omáčky) jsou od 1.&thinsp;9.&thinsp;2025 zakázány. Řešením je vaření vlastního vývaru &mdash; lze ho připravit ve velkém a&nbsp;zmrazit na&nbsp;porce.</p>
+            </div>
+            <div style="border-bottom:1px solid var(--border);padding:.75rem 0;">
+              <strong>Jak zapojit celozrnné obiloviny, když je děti nechtějí?</strong>
+              <p style="font-size:.88rem;color:var(--text-secondary);margin-top:.35rem;">Osvědčené tipy: přimíchejte celozrnnou mouku (30&ndash;50&thinsp;%) do běžné mouky na jíšku či těsto. Přidejte vločky nebo kroupy do karbanátků. Použijte bulgur místo rýže. Děti většinou rozdíl nepoznají.</p>
+            </div>
+            <div style="border-bottom:1px solid var(--border);padding:.75rem 0;">
+              <strong>Kde získáme metodickou podporu?</strong>
+              <p style="font-size:.88rem;color:var(--text-secondary);margin-top:.35rem;">Tým ambasádorů projektu &bdquo;Máme to na talíři&ldquo; nabízí bezplatné konzultace. Kontakty a&nbsp;materiály najdete na <strong>mametonataliri.cz</strong>. Krajské hygienické stanice rovněž poskytují poradenství.</p>
+            </div>
+            <div style="padding:.75rem 0;">
+              <strong>Hrozí nám pokuty, pokud koš nesplníme hned?</strong>
+              <p style="font-size:.88rem;color:var(--text-secondary);margin-top:.35rem;">V&nbsp;přechodném období (do 31.&thinsp;8.&thinsp;2026) ne. Cílem vyhlášky je podpora, nikoliv sankce. Inspekce bude sledovat především snahu o&nbsp;postupné přizpůsobení, nikoliv okamžité 100% plnění.</p>
+            </div>
+          </div>
+        </details>
       </div>
 
       <div class="card">
 
-        <h3>Zadejte udaje o vasi jidelne</h3>
+        <h3>Zadejte údaje o&nbsp;vaší jídelně</h3>
         <div class="form-grid">
           <div class="form-group">
-            <label>Vekova kategorie deti</label>
+            <label>Věková kategorie dětí</label>
             <select id="g-age">
-              <option value="2-3">2&ndash;3 roky (jesle / MS)</option>
-              <option value="4-6">4&ndash;6 let (materska skola)</option>
-              <option value="7-10" selected>7&ndash;10 let (1.&ndash;4. trida)</option>
-              <option value="11-14">11&ndash;14 let (5.&ndash;9. trida)</option>
-              <option value="15+">15+ let (stredni skola)</option>
+              <option value="2-3">2&ndash;3 roky (jesle / MŠ)</option>
+              <option value="4-6">4&ndash;6 let (mateřská škola)</option>
+              <option value="7-10" selected>7&ndash;10 let (1.&ndash;4. třída)</option>
+              <option value="11-14">11&ndash;14 let (5.&ndash;9. třída)</option>
+              <option value="15+">15+ let (střední škola)</option>
             </select>
           </div>
           <div class="form-group">
-            <label>Pocet stravniku (kolik obedva?)</label>
+            <label>Počet strávníků (kolik obědvá?)</label>
             <input type="number" id="g-diners" value="100" min="1" max="5000">
           </div>
           <div class="form-group">
-            <label>Zacatek jidelnicku (pondeli)</label>
+            <label>Začátek jídelníčku (pondělí)</label>
             <input type="date" id="g-start" value="2026-09-07">
           </div>
           <div class="form-group">
-            <label>Jak casto nakupujete suroviny?</label>
+            <label>Jak často nakupujete suroviny?</label>
             <select id="g-freq">
-              <option value="1">Kazdy den</option>
-              <option value="2">Ob den (3x tydne)</option>
-              <option value="5" selected>1x tydne</option>
-              <option value="10">1x za 14 dni</option>
+              <option value="1">Každý den</option>
+              <option value="2">Ob den (3&times; týdně)</option>
+              <option value="5" selected>1&times; týdně</option>
+              <option value="10">1&times; za 14 dní</option>
             </select>
           </div>
         </div>
-        <button class="btn btn-accent" id="g-run">Vygenerovat jidelnicek</button>
+        <button class="btn btn-accent" id="g-run">Vygenerovat jídelníček</button>
       </div>
 
       <div id="g-output" style="display:none;">
         <div class="card">
-          <h2>Jidelnicek po dnech s recepty</h2>
-          <p style="color:var(--text-muted);margin-bottom:1rem;font-size:.9rem;">Kliknete na nazev jidla pro zobrazeni podrobneho receptu, ingredienci a postupu pripravy.</p>
+          <h2>Jídelníček po dnech s&nbsp;recepty</h2>
+          <p style="color:var(--text-muted);margin-bottom:1rem;font-size:.9rem;">Klikněte na název jídla pro zobrazení podrobného receptu, ingrediencí a&nbsp;postupu přípravy.</p>
           <div id="g-menu"></div>
         </div>
         <div class="card">
-          <h2>Splnuje tento jidelnicek novou vyhlasku?</h2>
+          <h2>Splňuje tento jídelníček novou vyhlášku?</h2>
           <div class="info-box">
-            Nize vidite, jak vygenerovany jidelnicek odpovida pozadavkum <strong>nove vyhlasky 310/2025 Sb.</strong>
-            Zelena = v poradku. Cervena = nesplneno. Oranzova = prekroceno (u nekterych skupin to nevadi).
+            Níže vidíte, jak vygenerovaný jídelníček odpovídá požadavkům <strong>nové vyhlášky 310/2025 Sb.</strong>
+            Zelená = v&nbsp;pořádku. Červená = nesplněno. Oranžová = překročeno (u&nbsp;některých skupin to nevadí).
           </div>
           <div id="g-compliance"></div>
         </div>
         <div class="card">
-          <h2>Prehled vygenerovaneho jidelniku</h2>
+          <h2>Přehled vygenerovaného jídelníčku</h2>
           <div id="g-stats"></div>
         </div>
         <div class="card">
-          <h2>Nakupni seznamy</h2>
-          <p style="color:var(--text-muted);margin-bottom:1rem;font-size:.9rem;">Suroviny jsou seskupeny podle toho, kdy je potreba nakoupit. Mnozstvi je prepocitano na vas pocet stravniku.</p>
+          <h2>Nákupní seznamy</h2>
+          <p style="color:var(--text-muted);margin-bottom:1rem;font-size:.9rem;">Suroviny jsou seskupeny podle toho, kdy je potřeba nakoupit. Množství je přepočítáno na váš počet strávníků.</p>
           <div id="g-shopping"></div>
         </div>
       </div>
@@ -904,36 +964,36 @@
     <!-- PRINT TAB -->
     <div id="print-menu" class="tab-content">
       <div class="card">
-        <h2>Jidelnicek k tisku</h2>
+        <h2>Jídelníček k&nbsp;tisku</h2>
         <div class="info-box">
-          Nejprve vygenerujte jidelnicek na zalozce <strong>Generator jidelniku</strong>.
-          Zde si muzete pridat nazev skoly a logo, a pak jidelnicek stahnout jako PDF nebo primo vytisknout.
-          Vysledny jidelnicek odpovida pozadavkum <strong>nove vyhlasky 310/2025 Sb.</strong> a doporucenim
-          projektu <strong>&bdquo;Mame to na taliri&ldquo;</strong> (SZU).
+          Nejprve vygenerujte jídelníček na záložce <strong>Generátor jídelníčku</strong>.
+          Zde si můžete přidat název školy a&nbsp;logo a&nbsp;pak jídelníček stáhnout jako PDF nebo přímo vytisknout.
+          Výsledný jídelníček odpovídá požadavkům <strong>nové vyhlášky 310/2025 Sb.</strong> a&nbsp;doporučením
+          projektu <strong>&bdquo;Máme to na talíři&ldquo;</strong> (SZÚ).
         </div>
         <div class="print-settings no-print">
           <div class="form-group">
-            <label>Nazev skoly / jidelny</label>
-            <input type="text" id="p-school" placeholder="napr. Zakladni skola Masarykova" value="">
+            <label>Název školy / jídelny</label>
+            <input type="text" id="p-school" placeholder="např. Základní škola Masarykova" value="">
           </div>
           <div class="form-group">
-            <label>Obdobi</label>
-            <input type="text" id="p-period" placeholder="napr. Brezen 2026" value="">
+            <label>Období</label>
+            <input type="text" id="p-period" placeholder="např. Březen 2026" value="">
           </div>
           <div class="form-group">
-            <label>Logo skoly</label>
+            <label>Logo školy</label>
             <div class="logo-upload-area" id="p-logo-area">
-              <span id="p-logo-text">Kliknete nebo pretahnete logo sem</span>
+              <span id="p-logo-text">Klikněte nebo přetáhněte logo sem</span>
               <input type="file" id="p-logo-input" accept="image/*" style="display:none;">
             </div>
           </div>
         </div>
         <div class="no-print" style="margin-bottom:1.5rem;display:flex;gap:1rem;flex-wrap:wrap;">
-          <button class="btn" id="p-refresh">Aktualizovat nahled</button>
-          <button class="btn btn-accent" id="p-download">Stahnout PDF / Tisknout</button>
+          <button class="btn" id="p-refresh">Aktualizovat náhled</button>
+          <button class="btn btn-accent" id="p-download">Stáhnout PDF / Tisknout</button>
         </div>
         <div id="p-no-menu" class="info-box" style="background:var(--warning-bg);border-color:#fbbf24;">
-          Zatim neni vygenerovan zadny jidelnicek. Prejdete na zalozku <strong>Generator jidelniku</strong> a kliknete na <strong>Vygenerovat jidelnicek</strong>.
+          Zatím není vygenerován žádný jídelníček. Přejděte na záložku <strong>Generátor jídelníčku</strong> a&nbsp;klikněte na <strong>Vygenerovat jídelníček</strong>.
         </div>
         <div id="print-preview" style="display:none;">
           <div class="print-header">
@@ -943,7 +1003,7 @@
           </div>
           <div id="p-grid-container"></div>
           <p style="text-align:center;color:#78716c;font-size:.8rem;margin-top:1rem;">
-            Vyhlaska nevyzaduje nove nezname recepty. Jidelnicek muze vypadat napriklad takto.
+            Vyhláška nevyžaduje nové neznámé recepty. Jídelníček může vypadat například takto.
           </p>
         </div>
       </div>
@@ -951,15 +1011,15 @@
 
     <div id="old-basket" class="tab-content">
       <div class="card">
-        <h2>Stary spotrebni kos (107/2005 Sb.)</h2>
+        <h2>Starý spotřební koš (107/2005 Sb.)</h2>
         <div class="info-box">
-          Gramaze v g "jak nakoupeno" na stravnika a den. Platny do 31. 8. 2026.
-          Mesicni prumerna spotreba s toleranci &plusmn;25 %. Tuky a cukr = horni limit (75&ndash;100 %).
-          Zelenina, ovoce, lusteniny &mdash; zadouci prekracovat.
+          Gramáže v&nbsp;g &bdquo;jak nakoupeno&ldquo; na strávníka a&nbsp;den. Platný do 31.&thinsp;8.&thinsp;2026.
+          Měsíční průměrná spotřeba s&nbsp;tolerancí &plusmn;25&thinsp;%. Tuky a&nbsp;cukr = horní limit (75&ndash;100&thinsp;%).
+          Zelenina, ovoce, luštěniny &mdash; žádoucí překračovat.
         </div>
-        <h3>Obed (skoly) / presnidavka + obed + svacina (MS)</h3>
+        <h3>Oběd (školy) / přesnídávka + oběd + svačina (MŠ)</h3>
         <div id="old-basket-lunch-table"></div>
-        <h3>Celodenni stravovani</h3>
+        <h3>Celodenní stravování</h3>
         <div id="old-basket-full-table"></div>
         <h3>Tolerance</h3>
         <div id="old-tolerances-table"></div>
@@ -968,43 +1028,43 @@
 
     <div id="new-basket" class="tab-content">
       <div class="card">
-        <h2>Novy spotrebni kos (310/2025 Sb.) &mdash; Standardni</h2>
+        <h2>Nový spotřební koš (310/2025 Sb.) &mdash; Standardní</h2>
         <div class="info-box">
-          Gramaze v g ciste hmotnosti (jedly podil) na stravnika a den.
-          Ucinnost od 1. 9. 2025, prechodne obdobi do 31. 8. 2026.
-          Potravinove skupiny zredukovany z 10 na 9.
+          Gramáže v&nbsp;g čisté hmotnosti (jedlý podíl) na strávníka a&nbsp;den.
+          Účinnost od 1.&thinsp;9.&thinsp;2025, přechodné období do 31.&thinsp;8.&thinsp;2026.
+          Potravinové skupiny zredukovány z&nbsp;10 na 9.
         </div>
-        <h3>Obed</h3>
+        <h3>Oběd</h3>
         <div id="new-basket-lunch-table"></div>
-        <h3>Celodenni stravovani</h3>
+        <h3>Celodenní stravování</h3>
         <div id="new-basket-full-table"></div>
-        <h3>Tolerance (Tabulka c. 3)</h3>
+        <h3>Tolerance (Tabulka č.&nbsp;3)</h3>
         <div id="new-tolerances-table"></div>
-        <h3>Rozlozeni po jidlech &mdash; 4&ndash;6 let (priklad)</h3>
+        <h3>Rozložení po jídlech &mdash; 4&ndash;6 let (příklad)</h3>
         <div id="meal-breakdown-table"></div>
       </div>
     </div>
 
     <div id="flexible" class="tab-content">
       <div class="card">
-        <h2>Flexibilni spotrebni kos (Priloha c. 1a)</h2>
+        <h2>Flexibilní spotřební koš (Příloha č.&nbsp;1a)</h2>
         <div class="info-box">
-          Alternativni kos s vyssi variabilitou. Maso a ryby mohou individualne klesnout na 0 %,
-          ale soucet <strong>maso + ryby + lusteniny</strong> musi splnit minimalni hodnoty.
+          Alternativní koš s&nbsp;vyšší variabilitou. Maso a&nbsp;ryby mohou individuálně klesnout na 0&thinsp;%,
+          ale součet <strong>maso + ryby + luštěniny</strong> musí splnit minimální hodnoty.
         </div>
-        <h3>Minimalni soucet (maso + ryby + lusteniny) &mdash; Obed (g)</h3>
+        <h3>Minimální součet (maso + ryby + luštěniny) &mdash; Oběd (g)</h3>
         <div id="flex-lunch-table"></div>
-        <h3>Minimalni soucet &mdash; Celodenni (g)</h3>
+        <h3>Minimální součet &mdash; Celodenní (g)</h3>
         <div id="flex-full-table"></div>
       </div>
     </div>
 
     <div id="allergens" class="tab-content">
       <div class="card">
-        <h2>14 povinnych alergenu (EU 1169/2011)</h2>
+        <h2>14 povinných alergenů (EU 1169/2011)</h2>
         <div class="info-box">
-          Povinnost informovat o alergenech u nebalenych pokrmu a jidel v hromadnem stravovani.
-          U obilovin (1) a orechu (8) nutno identifikovat konkretni druh.
+          Povinnost informovat o&nbsp;alergenech u&nbsp;nebalených pokrmů a&nbsp;jídel v&nbsp;hromadném stravování.
+          U&nbsp;obilovin (1) a&nbsp;ořechů (8) nutno identifikovat konkrétní druh.
         </div>
         <div id="allergen-grid" class="allergen-grid"></div>
       </div>
@@ -1012,9 +1072,9 @@
 
     <div id="financial" class="tab-content">
       <div class="card">
-        <h2>Financni normativy (Priloha c. 2, od 1. 9. 2025)</h2>
+        <h2>Finanční normativy (Příloha č.&nbsp;2, od 1.&thinsp;9.&thinsp;2025)</h2>
         <div class="info-box">
-          Hodnoty v Kc na stravnika a den. Sportovni gymnazia a tanecni konzervatore: horni limit navysen az o 50 %.
+          Hodnoty v&nbsp;Kč na strávníka a&nbsp;den. Sportovní gymnázia a&nbsp;taneční konzervatoře: horní limit navýšen až o&nbsp;50&thinsp;%.
         </div>
         <div id="financial-table"></div>
       </div>
@@ -1022,85 +1082,85 @@
 
     <div id="energy" class="tab-content">
       <div class="card">
-        <h2>Energeticka distribuce a makronutrienty</h2>
-        <h3>Podil jidel na dennim energetickem prijmu (%)</h3>
+        <h2>Energetická distribuce a&nbsp;makronutrienty</h2>
+        <h3>Podíl jídel na denním energetickém příjmu (%)</h3>
         <div id="energy-dist-table"></div>
-        <h3>Orientacni energeticke hodnoty obeda (kcal)</h3>
+        <h3>Orientační energetické hodnoty oběda (kcal)</h3>
         <div id="lunch-energy-table"></div>
-        <h3>Porcni koeficienty (od dospele porce)</h3>
+        <h3>Porční koeficienty (od dospělé porce)</h3>
         <div id="portion-table"></div>
-        <h3>Makronutrientove pomery</h3>
+        <h3>Makronutrientové poměry</h3>
         <div id="macro-info"></div>
       </div>
     </div>
 
     <div id="frequency" class="tab-content">
       <div class="card">
-        <h2>Pravidla pestrosti jidelnicku</h2>
+        <h2>Pravidla pestrosti jídelníčku</h2>
         <div class="info-box">
-          Referencni obdobi: 20 stravovacich dnu za mesic.
-          Zelenina nebo ovoce ke kazdemu jidlu povinne (od 2025).
+          Referenční období: 20 stravovacích dnů za měsíc.
+          Zelenina nebo ovoce ke každému jídlu povinně (od 2025).
         </div>
-        <h3>Frekvence hlavnich jidel (20 dnu/mesic)</h3>
+        <h3>Frekvence hlavních jídel (20 dnů/měsíc)</h3>
         <div id="main-freq-table"></div>
-        <h3>Frekvence priloh (20 dnu/mesic)</h3>
+        <h3>Frekvence příloh (20 dnů/měsíc)</h3>
         <div id="side-freq-table"></div>
-        <h3>Dalsi omezeni pestrosti</h3>
+        <h3>Další omezení pestrosti</h3>
         <div id="other-limits"></div>
       </div>
     </div>
 
     <div id="restrictions" class="tab-content">
       <div class="card">
-        <h2>Omezeni cukru, soli, tuku</h2>
+        <h2>Omezení cukru, soli, tuků</h2>
         <div id="limits-tables"></div>
       </div>
       <div class="card">
-        <h2>Zakazane potraviny a ingredience</h2>
+        <h2>Zakázané potraviny a&nbsp;ingredience</h2>
         <div id="banned-list" class="banned-list"></div>
       </div>
       <div class="card">
-        <h2>Napoje</h2>
-        <h3>Povolene napoje</h3>
+        <h2>Nápoje</h2>
+        <h3>Povolené nápoje</h3>
         <div id="allowed-bev" class="beverage-list"></div>
-        <h3 style="margin-top:1rem;">Nevhodne pro deti</h3>
+        <h3 style="margin-top:1rem;">Nevhodné pro děti</h3>
         <div id="unsuitable-bev" class="beverage-list"></div>
       </div>
       <div class="card">
-        <h2>Pamlskova vyhlaska (282/2016 Sb.) &mdash; Automaty a bufety</h2>
+        <h2>Pamlsková vyhláška (282/2016 Sb.) &mdash; Automaty a&nbsp;bufety</h2>
         <div id="vending-table"></div>
       </div>
     </div>
 
     <div id="validator" class="tab-content">
       <div class="card">
-        <h2>Validace spotrebniho kose</h2>
+        <h2>Validace spotřebního koše</h2>
         <div class="info-box">
-          Zadejte prumernou denni spotrebu a system overi plneni spotrebniho kose.
-          Validace probiha primo v prohlizeci &mdash; zadna data se neodesилaji na server.
+          Zadejte průměrnou denní spotřebu a&nbsp;systém ověří plnění spotřebního koše.
+          Validace probíhá přímo v&nbsp;prohlížeči &mdash; žádná data se neodesílají na server.
         </div>
         <div class="form-grid">
           <div class="form-group">
-            <label>Rezim kose</label>
+            <label>Režim koše</label>
             <select id="v-regime">
-              <option value="old">Stary kos (107/2005)</option>
-              <option value="new_standard">Novy standardni (310/2025)</option>
-              <option value="new_flexible">Novy flexibilni</option>
+              <option value="old">Starý koš (107/2005)</option>
+              <option value="new_standard">Nový standardní (310/2025)</option>
+              <option value="new_flexible">Nový flexibilní</option>
             </select>
           </div>
           <div class="form-group">
-            <label>Vekova kategorie</label>
+            <label>Věková kategorie</label>
             <select id="v-age"></select>
           </div>
           <div class="form-group">
-            <label>Typ stravovani</label>
+            <label>Typ stravování</label>
             <select id="v-plan">
-              <option value="lunch">Obed</option>
-              <option value="fullday">Celodenni</option>
+              <option value="lunch">Oběd</option>
+              <option value="fullday">Celodenní</option>
             </select>
           </div>
         </div>
-        <h3>Prumerne denni gramaze (g)</h3>
+        <h3>Průměrné denní gramáže (g)</h3>
         <div id="v-groups" class="form-grid"></div>
         <button class="btn" id="v-run" style="margin-top:1rem;">Validovat</button>
         <div id="v-results" style="margin-top:1rem;"></div>
@@ -1110,12 +1170,12 @@
   </main>
 
   <footer>
-    Skolni stravovani CR &mdash; Nastroj pro skolni jidelny dle vyhlasky 107/2005 Sb. a novely 310/2025 Sb.
-    <br>Data a recepty slouzi jako orientacni vzor. Konkretni jidelnicek vzdy konzultujte s nutricnim terapeutem.
-    <br>Odborne informace: <a href="https://www.mametonataliri.cz" target="_blank" style="color:#93c5fd;">mametonataliri.cz</a> (SZU)
-    &bull; <a href="https://www.zakonyprolidi.cz/cs/2025-310" target="_blank" style="color:#93c5fd;">Vyhlaska 310/2025 Sb.</a>
-    &bull; <a href="https://msmt.gov.cz/vzdelavani/skolni-stravovani" target="_blank" style="color:#93c5fd;">MSMT — Skolni stravovani</a>
-    &bull; <a href="https://jidelny.cz/aktuality-k-novele-vyhlasky/" target="_blank" style="color:#93c5fd;">Jidelny.cz</a>
+    Školní stravování ČR &mdash; Nástroj pro školní jídelny dle vyhlášky 107/2005 Sb. a&nbsp;novely 310/2025 Sb.
+    <br>Data a&nbsp;recepty slouží jako orientační vzor. Konkrétní jídelníček vždy konzultujte s&nbsp;nutričním terapeutem.
+    <br>Odborné informace: <a href="https://www.mametonataliri.cz" target="_blank" style="color:#93c5fd;">mametonataliri.cz</a> (SZÚ)
+    &bull; <a href="https://www.zakonyprolidi.cz/cs/2025-310" target="_blank" style="color:#93c5fd;">Vyhláška 310/2025 Sb.</a>
+    &bull; <a href="https://msmt.gov.cz/vzdelavani/skolni-stravovani" target="_blank" style="color:#93c5fd;">MŠMT &mdash; Školní stravování</a>
+    &bull; <a href="https://jidelny.cz/aktuality-k-novele-vyhlasky/" target="_blank" style="color:#93c5fd;">Jídelny.cz</a>
   </footer>
 
   <script>
